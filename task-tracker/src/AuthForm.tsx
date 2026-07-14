@@ -1,4 +1,4 @@
-import { useState, SyntheticEvent, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { login, register, User } from "./auth";
 
 interface AuthProps {
@@ -12,7 +12,7 @@ function AuthForm({ onAuthenticated }: AuthProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -24,54 +24,96 @@ function AuthForm({ onAuthenticated }: AuthProps) {
           : await register(username, password);
       onAuthenticated(user);
     } catch (err) {
-      console.error("Error completo:", err);
-      setError(err instanceof Error ? err.message : JSON.stringify(err));
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 350, margin: "80px auto", padding: 20 }}>
-      <h1>{mode === "login" ? "Iniciar sesión" : "Crear cuenta"}</h1>
-
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Usuario"
-          required
-          style={{ padding: 8 }}
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at 30% 20%, #1e3a5f 0%, #0f1b2d 60%)",
+      }}
+    >
+      <div
+        style={{
+          background: "#16263d",
+          border: "1px solid #2a4a6b",
+          borderRadius: 16,
+          padding: "48px 40px",
+          width: 380,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+          textAlign: "center",
+        }}
+      >
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{ width: 120, height: 90, marginBottom: 16 }}
         />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Contraseña"
-          required
-          style={{ padding: 8 }}
-        />
 
-        {error && <p style={{ color: "tomato", margin: 0 }}>{error}</p>}
+        <h1 style={{ margin: 0, fontSize: 26 }}>Task Tracker</h1>
+        <p style={{ marginTop: 6, marginBottom: 32, opacity: 0.6, fontSize: 14 }}>
+          {mode === "login" ? "Bienvenido de vuelta" : "Crea tu cuenta para empezar"}
+        </p>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Cargando..." : mode === "login" ? "Entrar" : "Registrarse"}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Usuario"
+            required
+            style={{ padding: 12, fontSize: 15 }}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Contraseña"
+            required
+            style={{ padding: 12, fontSize: 15 }}
+          />
 
-      <p style={{ marginTop: 15 }}>
-        {mode === "login" ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
-            setError("");
-          }}
-          style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}
-        >
-          {mode === "login" ? "Regístrate" : "Inicia sesión"}
-        </button>
-      </p>
+          {error && <p style={{ color: "#ff6b6b", margin: 0, fontSize: 13 }}>{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: 12,
+              fontSize: 15,
+              background: "#4f9eff",
+              border: "none",
+              borderRadius: 8,
+              color: "white",
+              fontWeight: 600,
+              cursor: "pointer",
+              marginTop: 8,
+            }}
+          >
+            {loading ? "Cargando..." : mode === "login" ? "Entrar" : "Registrarse"}
+          </button>
+        </form>
+
+        <p style={{ marginTop: 24, fontSize: 14 }}>
+          {mode === "login" ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
+          <button
+            type="button"
+            onClick={() => {
+              setMode(mode === "login" ? "register" : "login");
+              setError("");
+            }}
+            style={{ background: "none", border: "none", color: "#4f9eff", textDecoration: "underline", cursor: "pointer", padding: 0, fontSize: 14 }}
+          >
+            {mode === "login" ? "Regístrate" : "Inicia sesión"}
+          </button>
+        </p>
+      </div>
     </div>
   );
 }

@@ -245,7 +245,7 @@ async function handleDeleteSubject(id: number) {
 
       <div style={{ flex: 1, padding: 20 }}>
         {currentPage === "dashboard" && (
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ maxWidth: 1500, margin: "0 auto" }}>
             <div
             style={{
               display: "flex",
@@ -323,17 +323,21 @@ async function handleDeleteSubject(id: number) {
         )}
 
         {currentPage === "schedule" && (
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <ScheduleView
-              slots={scheduleSlots}
-              subjects={subjects}
-              onCellClick={(day, hour) => setPickerCell({ day, hour })}
-            />
-            <SubjectsManager
-              subjects={subjects}
-              onToggleEnabled={handleToggleSubjectEnabled}
-              onDelete={handleDeleteSubject}
-            />
+          <div style={{ maxWidth: 1300, margin: "0 auto" }}>
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+              <div style={{ flex: 2, minWidth: 400 }}>
+                <ScheduleView
+                  slots={scheduleSlots}
+                  subjects={subjects}
+                  onCellClick={(day, hour) => setPickerCell({ day, hour })}
+                />
+              </div>
+              <SubjectsManager
+                subjects={subjects}
+                onToggleEnabled={handleToggleSubjectEnabled}
+                onDelete={handleDeleteSubject}
+              />
+            </div>
           </div>
         )}
 

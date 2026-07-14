@@ -53,7 +53,7 @@ function UpcomingTasksList({ tasks, taskTypes, subjects, onSelectTask }: Upcomin
   }
 
   return (
-    <div style={{ flex: 1, minWidth: 220 }}>
+    <div style={{ flex: 1, minWidth: 700 }}>
       <h3 style={{ marginTop: 0 }}>Próximas tareas</h3>
 
       {pending.length === 0 && (

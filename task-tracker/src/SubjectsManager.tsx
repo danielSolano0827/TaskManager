@@ -12,31 +12,39 @@ interface SubjectsManagerProps {
 }
 
 function SubjectsManager({ subjects, onToggleEnabled, onDelete }: SubjectsManagerProps) {
-  if (subjects.length === 0) return null;
-
   return (
-    <div style={{ marginTop: 24 }}>
-      <h3>Materias</h3>
-      <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+    <div style={{ flex: 1, minWidth: 220 }}>
+      <h2 style={{ marginTop: 16 }}>Materias</h2>
+
+      {subjects.length === 0 && (
+        <p style={{ opacity: 0.6, fontSize: 14 }}>Aún no has creado materias.</p>
+      )}
+
+      <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
         {subjects.map((s) => (
           <li
             key={s.id}
             style={{
-              display: "flex", alignItems: "center", gap: 10,
-              background: "#16263d", border: "1px solid #2a4a6b", borderRadius: 8, padding: "8px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "#16263d",
+              border: "1px solid #2a4a6b",
+              borderRadius: 8,
+              padding: "10px 12px",
             }}
           >
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: s.color, display: "inline-block" }} />
-            <span style={{ flex: 1 }}>{s.name}</span>
-            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: 14 }}>{s.name}</span>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, opacity: 0.8 }}>
               <input
                 type="checkbox"
                 checked={s.enabled === 1}
                 onChange={(e) => onToggleEnabled(s.id, e.target.checked)}
               />
-              Habilitada
+              Activa
             </label>
-            <button onClick={() => onDelete(s.id)}>Eliminar</button>
+            <button onClick={() => onDelete(s.id)} style={{ fontSize: 12 }}>Eliminar</button>
           </li>
         ))}
       </ul>

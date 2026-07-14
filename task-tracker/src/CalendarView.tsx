@@ -42,7 +42,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
   }
 
   return (
-    <div style={{ maxWidth: 500, margin: "0 auto" }}>
+    <div style={{ maxWidth: 700, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <button onClick={prevMonth}>◀</button>
         <h2 style={{ margin: 0 }}>{MONTH_NAMES[month]} {year}</h2>
