@@ -9,6 +9,11 @@
     "sql:default",
     "sql:allow-execute",
     "sql:allow-select",
-    "sql:allow-load"
+    "sql:allow-load",
+    "core:app:default",
+    "core:window:default",
+    "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-maximize"
   ]
 }

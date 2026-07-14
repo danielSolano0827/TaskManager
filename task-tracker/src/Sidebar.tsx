@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { exitApp } from "./windowControls";
+import ConfirmModal from "./ConfirmModal";
+
 interface SidebarProps {
   username: string;
   currentPage: string;
@@ -8,9 +12,16 @@ interface SidebarProps {
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "📅" },
   { id: "schedule", label: "Horario", icon: "🗓️" },
+  { id: "settings", label: "Configuración", icon: "⚙️" },
 ];
 
 function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) {
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  async function handleConfirmExit() {
+    await exitApp();
+  }
+
   return (
     <div
       style={{
@@ -53,23 +64,55 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
         ))}
       </nav>
 
-      <button
-        onClick={onLogout}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "10px 12px",
-          border: "1px solid #2a4a6b",
-          borderRadius: 8,
-          cursor: "pointer",
-          background: "transparent",
-          color: "#e8f0ff",
-        }}
-      >
-        <span>🚪</span>
-        <span>Cerrar sesión</span>
-      </button>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <button
+          onClick={onLogout}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 12px",
+            border: "1px solid #2a4a6b",
+            borderRadius: 8,
+            cursor: "pointer",
+            background: "transparent",
+            color: "#e8f0ff",
+          }}
+        >
+          <span>🚪</span>
+          <span>Cerrar sesión</span>
+        </button>
+
+        <button
+          onClick={() => setShowExitConfirm(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 12px",
+            border: "1px solid #ff6b6b",
+            borderRadius: 8,
+            cursor: "pointer",
+            background: "transparent",
+            color: "#ff6b6b",
+          }}
+        >
+          <span>⏻</span>
+          <span>Salir</span>
+        </button>
+      </div>
+
+      {showExitConfirm && (
+        <ConfirmModal
+          title="Salir de la aplicación"
+          message="¿Seguro que quieres cerrar Task Tracker? Se cerrará por completo."
+          confirmLabel="Salir"
+          cancelLabel="Cancelar"
+          danger
+          onConfirm={handleConfirmExit}
+          onCancel={() => setShowExitConfirm(false)}
+        />
+      )}
     </div>
   );
 }

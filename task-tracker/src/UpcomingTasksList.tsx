@@ -1,3 +1,5 @@
+import { isOverdue } from "./dateUtils";
+
 interface Task {
   id: number;
   title: string;
@@ -53,7 +55,7 @@ function UpcomingTasksList({ tasks, taskTypes, subjects, onSelectTask }: Upcomin
   }
 
   return (
-    <div style={{ flex: 1, minWidth: 700 }}>
+    <div style={{ flex: 1, minWidth: 220 }}>
       <h3 style={{ marginTop: 0 }}>Próximas tareas</h3>
 
       {pending.length === 0 && (
@@ -61,42 +63,48 @@ function UpcomingTasksList({ tasks, taskTypes, subjects, onSelectTask }: Upcomin
       )}
 
       <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-        {pending.map((task) => (
-          <li
-            key={task.id}
-            onClick={() => onSelectTask(task.due_date)}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 8,
-              background: "#16263d",
-              border: "1px solid #2a4a6b",
-              borderRadius: 8,
-              padding: "10px 12px",
-              cursor: "pointer",
-            }}
-          >
-            <span
-              title={`Prioridad ${task.priority}`}
+        {pending.map((task) => {
+          const overdue = isOverdue(task.due_date, task.status);
+          return (
+            <li
+              key={task.id}
+              onClick={() => onSelectTask(task.due_date)}
               style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                background: PRIORITY_COLORS[task.priority] ?? "#888",
-                marginTop: 4,
-                flexShrink: 0,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                background: overdue ? "rgba(255,107,107,0.08)" : "#16263d",
+                border: overdue ? "1px solid #ff6b6b" : "1px solid #2a4a6b",
+                borderRadius: 8,
+                padding: "10px 12px",
+                cursor: "pointer",
               }}
-            />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 500 }}>{task.title}</div>
-              <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>
-                {typeName(task.task_type_id)}
-                {subjectName(task.subject_id) && ` · ${subjectName(task.subject_id)}`}
-                {` · ${formatDate(task.due_date)}`}
+            >
+              <span
+                title={`Prioridad ${task.priority}`}
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: PRIORITY_COLORS[task.priority] ?? "#888",
+                  marginTop: 4,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 500, color: overdue ? "#ff9b9b" : "inherit" }}>
+                  {task.title}
+                </div>
+                <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>
+                  {typeName(task.task_type_id)}
+                  {subjectName(task.subject_id) && ` · ${subjectName(task.subject_id)}`}
+                  {` · ${formatDate(task.due_date)}`}
+                  {overdue && " · Vencida"}
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

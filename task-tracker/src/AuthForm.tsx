@@ -24,6 +24,7 @@ function AuthForm({ onAuthenticated }: AuthProps) {
           : await register(username, password);
       onAuthenticated(user);
     } catch (err) {
+      console.error("Error completo:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);

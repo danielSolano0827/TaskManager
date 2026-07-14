@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "task-tracker",
+  "productName": "Administrador de Tareas Universitarias",
   "version": "0.1.0",
   "identifier": "com.daniel.task-tracker",
   "build": {
@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
-        "title": "task-tracker",
+        "title": "Administrador de Tareas Universitarias",
         "width": 1920,
-        "height": 1080
+        "height": 1080,
+        "fullscreen": true
       }
     ],
     "security": {

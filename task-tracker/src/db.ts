@@ -22,7 +22,7 @@ export async function getDb() {
         ('Examen', 50),
         ('Proyecto', 80),
         ('Proyecto Final', 150),
-        ('Examen Final', 150),
+        ('Examen Final', 150)
     `);
 
     await db.execute(`

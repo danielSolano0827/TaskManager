@@ -1,7 +1,13 @@
 import { useState } from "react";
+import { todayKey } from "./dateUtils";
+
+interface DayInfo {
+  count: number;
+  hasOverdue: boolean;
+}
 
 interface CalendarViewProps {
-  tasksByDate: Record<string, number>; // "YYYY-MM-DD" -> cantidad de tareas
+  tasksByDate: Record<string, DayInfo>;
   onSelectDay: (date: string) => void;
 }
 
@@ -27,7 +33,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+  const tKey = todayKey();
 
   const cells: (number | null)[] = [
     ...Array(firstDayOfWeek).fill(null),
@@ -42,7 +48,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto" }}>
+    <div style={{ maxWidth: 600, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <button onClick={prevMonth}>◀</button>
         <h2 style={{ margin: 0 }}>{MONTH_NAMES[month]} {year}</h2>
@@ -60,8 +66,9 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
           if (day === null) return <div key={idx} />;
 
           const dateKey = toDateKey(year, month, day);
-          const count = tasksByDate[dateKey] ?? 0;
-          const isToday = dateKey === todayKey;
+          const info = tasksByDate[dateKey];
+          const isToday = dateKey === tKey;
+          const hasOverdue = info?.hasOverdue ?? false;
 
           return (
             <button
@@ -69,9 +76,13 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
               onClick={() => onSelectDay(dateKey)}
               style={{
                 aspectRatio: "1",
-                border: isToday ? "2px solid #4f9eff" : "1px solid #333",
+                border: hasOverdue
+                  ? "2px solid #ff6b6b"
+                  : isToday
+                  ? "2px solid #4f9eff"
+                  : "1px solid #2a4a6b",
                 borderRadius: 6,
-                background: "transparent",
+                background: hasOverdue ? "rgba(255,107,107,0.1)" : "transparent",
                 color: "inherit",
                 cursor: "pointer",
                 display: "flex",
@@ -82,11 +93,11 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
               }}
             >
               <span>{day}</span>
-              {count > 0 && (
+              {info && info.count > 0 && (
                 <span
                   style={{
                     fontSize: 10,
-                    background: "#4f9eff",
+                    background: hasOverdue ? "#ff6b6b" : "#4f9eff",
                     color: "white",
                     borderRadius: "50%",
                     width: 16,
@@ -97,7 +108,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
                     marginTop: 2,
                   }}
                 >
-                  {count}
+                  {info.count}
                 </span>
               )}
             </button>
