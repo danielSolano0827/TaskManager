@@ -16,12 +16,13 @@ export async function getDb() {
 
     await db.execute(`
       INSERT OR IGNORE INTO task_types (name, base_points) VALUES
-        ('lectura', 10),
-        ('quiz', 20),
-        ('tarea', 30),
-        ('examen', 50),
-        ('proyecto', 80),
-        ('proyecto_final', 150)
+        ('Lectura', 10),
+        ('Quiz', 20),
+        ('Tarea', 30),
+        ('Examen', 50),
+        ('Proyecto', 80),
+        ('Proyecto Final', 150),
+        ('Examen Final', 150),
     `);
 
     await db.execute(`
@@ -46,19 +47,47 @@ export async function getDb() {
     `);
 
     await db.execute(`
+      CREATE TABLE IF NOT EXISTS subjects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        color VARCHAR(20) DEFAULT '#4f9eff',
+        enabled INTEGER NOT NULL DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS schedule_slots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        subject_id INTEGER NOT NULL,
+        day_of_week INTEGER NOT NULL, -- 0=Domingo ... 6=Sábado
+        hour INTEGER NOT NULL,        -- 7 a 19
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (subject_id) REFERENCES subjects(id)
+      )
+    `);
+
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         task_type_id INTEGER NOT NULL,
+        subject_id INTEGER,
         title VARCHAR(150) NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',
+        priority VARCHAR(10) DEFAULT 'media',
         grade REAL,
         points_earned INTEGER DEFAULT 0,
         due_date DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (task_type_id) REFERENCES task_types(id)
+        FOREIGN KEY (task_type_id) REFERENCES task_types(id),
+        FOREIGN KEY (subject_id) REFERENCES subjects(id)
       )
     `);
 

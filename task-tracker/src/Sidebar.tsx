@@ -7,6 +7,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "📅" },
+  { id: "schedule", label: "Horario", icon: "🗓️" },
 ];
 
 function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) {

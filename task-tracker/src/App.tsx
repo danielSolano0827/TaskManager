@@ -6,6 +6,9 @@ import CalendarView from "./CalendarView";
 import TaskModal from "./TaskModal";
 import CompleteTaskModal from "./CompleteTaskModal";
 import UpcomingTasksList from "./UpcomingTasksList";
+import ScheduleView from "./ScheduleView";
+import SubjectPickerModal from "./SubjectPickerModal";
+import SubjectsManager from "./SubjectsManager";
 import { User } from "./auth";
 import "./App.css";
 
@@ -14,6 +17,8 @@ interface Task {
   title: string;
   status: "pending" | "done";
   task_type_id: number;
+  subject_id: number | null;
+  priority: "baja" | "media" | "alta";
   grade: number | null;
   points_earned: number;
   due_date: string;
@@ -25,6 +30,19 @@ interface TaskType {
   base_points: number;
 }
 
+interface Subject {
+  id: number;
+  name: string;
+  color: string;
+  enabled: number;
+}
+interface ScheduleSlot {
+  id: number;
+  subject_id: number;
+  day_of_week: number;
+  hour: number;
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -32,6 +50,21 @@ function App() {
   const [taskTypes, setTaskTypes] = useState<TaskType[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [taskToComplete, setTaskToComplete] = useState<Task | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([]);
+  const [pickerCell, setPickerCell] = useState<{ day: number; hour: number } | null>(null);
+
+  async function loadSubjects(userId: number) {
+    const db = await getDb();
+    const result = await db.select<Subject[]>("SELECT * FROM subjects WHERE user_id = $1", [userId]);
+    setSubjects(result);
+  }
+
+  async function loadScheduleSlots(userId: number) {
+    const db = await getDb();
+    const result = await db.select<ScheduleSlot[]>("SELECT * FROM schedule_slots WHERE user_id = $1", [userId]);
+    setScheduleSlots(result);
+  }
 
   async function loadTaskTypes() {
     const db = await getDb();
@@ -61,6 +94,8 @@ function App() {
     if (user) {
       loadTaskTypes();
       loadTasks(user.id);
+      loadSubjects(user.id);
+      loadScheduleSlots(user.id);
     }
   }, [user?.id]);
 
@@ -72,12 +107,13 @@ function App() {
     setCurrentPage("dashboard");
   }
 
-  async function handleAddTask(title: string, taskTypeId: number) {
+  //------------------FUNCIONES DE TAREAS------------------
+  async function handleAddTask(title: string, taskTypeId: number, subjectId: number | null, priority: string) {
     if (!user || !selectedDate) return;
     const db = await getDb();
     await db.execute(
-      "INSERT INTO tasks (user_id, task_type_id, title, due_date) VALUES ($1, $2, $3, $4)",
-      [user.id, taskTypeId, title, selectedDate]
+      "INSERT INTO tasks (user_id, task_type_id, subject_id, title, due_date, priority) VALUES ($1, $2, $3, $4, $5, $6)",
+      [user.id, taskTypeId, subjectId, title, selectedDate, priority]
     );
     await loadTasks(user.id);
   }
@@ -118,6 +154,71 @@ function App() {
     await db.execute("DELETE FROM tasks WHERE id = $1", [id]);
     await loadTasks(user.id);
   }
+  //------------------FIN DEFUNCIONES DE TAREAS------------------
+
+  //------------------FUNCIONES DEL HORARIO------------------
+  async function handleCreateAndAssign(name: string, color: string) {
+  if (!user || !pickerCell) return;
+  const db = await getDb();
+  await db.execute(
+    "INSERT INTO subjects (user_id, name, color) VALUES ($1, $2, $3)",
+    [user.id, name, color]
+  );
+  const [newSubject] = await db.select<Subject[]>(
+    "SELECT * FROM subjects WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
+    [user.id]
+  );
+  await assignSlot(newSubject.id);
+}
+
+async function assignSlot(subjectId: number) {
+  if (!user || !pickerCell) return;
+  const db = await getDb();
+  const existing = scheduleSlots.find(
+    (s) => s.day_of_week === pickerCell.day && s.hour === pickerCell.hour
+  );
+  if (existing) {
+    await db.execute("UPDATE schedule_slots SET subject_id = $1 WHERE id = $2", [subjectId, existing.id]);
+  } else {
+    await db.execute(
+      "INSERT INTO schedule_slots (user_id, subject_id, day_of_week, hour) VALUES ($1, $2, $3, $4)",
+      [user.id, subjectId, pickerCell.day, pickerCell.hour]
+    );
+  }
+  setPickerCell(null);
+  await loadSubjects(user.id);
+  await loadScheduleSlots(user.id);
+}
+
+async function handleRemoveSlot() {
+  if (!user || !pickerCell) return;
+  const db = await getDb();
+  const existing = scheduleSlots.find(
+    (s) => s.day_of_week === pickerCell.day && s.hour === pickerCell.hour
+  );
+  if (existing) {
+    await db.execute("DELETE FROM schedule_slots WHERE id = $1", [existing.id]);
+  }
+  setPickerCell(null);
+  await loadScheduleSlots(user.id);
+}
+
+async function handleToggleSubjectEnabled(id: number, enabled: boolean) {
+  if (!user) return;
+  const db = await getDb();
+  await db.execute("UPDATE subjects SET enabled = $1 WHERE id = $2", [enabled ? 1 : 0, id]);
+  await loadSubjects(user.id);
+}
+
+async function handleDeleteSubject(id: number) {
+  if (!user) return;
+  const db = await getDb();
+  await db.execute("DELETE FROM schedule_slots WHERE subject_id = $1", [id]);
+  await db.execute("DELETE FROM subjects WHERE id = $1", [id]);
+  await loadSubjects(user.id);
+  await loadScheduleSlots(user.id);
+}
+//------------------fIN DE FUNCIONES DEL HORARIO------------------
 
   if (!user) {
     return <AuthForm onAuthenticated={setUser} />;
@@ -212,8 +313,27 @@ function App() {
               <div style={{ flex: 1, minWidth: 320 }}>
                 <CalendarView tasksByDate={tasksByDate} onSelectDay={setSelectedDate} />
               </div>
-              <UpcomingTasksList tasks={tasks} taskTypes={taskTypes} onSelectTask={setSelectedDate} />
+              <UpcomingTasksList 
+                tasks={tasks} 
+                taskTypes={taskTypes} 
+                subjects={subjects} 
+                onSelectTask={setSelectedDate} />
             </div>
+          </div>
+        )}
+
+        {currentPage === "schedule" && (
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            <ScheduleView
+              slots={scheduleSlots}
+              subjects={subjects}
+              onCellClick={(day, hour) => setPickerCell({ day, hour })}
+            />
+            <SubjectsManager
+              subjects={subjects}
+              onToggleEnabled={handleToggleSubjectEnabled}
+              onDelete={handleDeleteSubject}
+            />
           </div>
         )}
 
@@ -222,6 +342,7 @@ function App() {
             date={selectedDate}
             tasks={tasksForSelectedDate}
             taskTypes={taskTypes}
+            subjects={subjects.filter((s) => s.enabled === 1)}
             onClose={() => setSelectedDate(null)}
             onAddTask={handleAddTask}
             onCompleteTask={setTaskToComplete}
@@ -235,6 +356,24 @@ function App() {
             taskType={typeForCompleting}
             onClose={() => setTaskToComplete(null)}
             onConfirm={handleConfirmComplete}
+          />
+        )}
+
+        {pickerCell && (
+          <SubjectPickerModal
+            day={pickerCell.day}
+            hour={pickerCell.hour}
+            dayLabel={["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][pickerCell.day]}
+            currentSubjectId={
+              scheduleSlots.find(
+                (s) => s.day_of_week === pickerCell.day && s.hour === pickerCell.hour
+              )?.subject_id ?? null
+            }
+            subjects={subjects}
+            onClose={() => setPickerCell(null)}
+            onAssign={assignSlot}
+            onCreateAndAssign={handleCreateAndAssign}
+            onRemove={handleRemoveSlot}
           />
         )}
       </div>
