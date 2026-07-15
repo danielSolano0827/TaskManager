@@ -10,7 +10,9 @@ import CompleteTaskModal from "./CompleteTaskModal";
 import ScheduleView from "./ScheduleView";
 import SubjectsManager from "./SubjectsManager";
 import SubjectPickerModal from "./SubjectPickerModal";
+import GradesView from "./GradesView";
 import SettingsView from "./SettingsView";
+import SemesterSelector from "./SemesterSelector";
 import { User } from "./auth";
 import "./App.css";
 
@@ -34,6 +36,7 @@ interface TaskType {
 
 interface Subject {
   id: number;
+  semester_id: number;
   name: string;
   color: string;
   enabled: number;
@@ -44,6 +47,21 @@ interface ScheduleSlot {
   subject_id: number;
   day_of_week: number;
   hour: number;
+}
+
+interface Rubric {
+  id: number;
+  subject_id: number;
+  name: string;
+  weight_percent: number;
+  type: "manual" | "tasks";
+  task_type_id: number | null;
+  manual_value: number;
+}
+
+interface Semester {
+  id: number;
+  name: string;
 }
 
 const RANK_THRESHOLDS = [
@@ -75,6 +93,13 @@ function App() {
   const [taskToComplete, setTaskToComplete] = useState<Task | null>(null);
   const [pickerCell, setPickerCell] = useState<{ day: number; hour: number } | null>(null);
 
+  const [rubrics, setRubrics] = useState<Rubric[]>([]);
+
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [scheduleSemesterId, setScheduleSemesterId] = useState<number | null>(null);
+  const [gradesSemesterId, setGradesSemesterId] = useState<number | null>(null);
+
+  //Funciones de carga de datos desde la base de datos
   async function loadTaskTypes() {
     const db = await getDb();
     const result = await db.select<TaskType[]>("SELECT * FROM task_types");
@@ -108,6 +133,30 @@ function App() {
     setScheduleSlots(result);
   }
 
+  async function loadRubrics(userId: number) {
+    const db = await getDb();
+    const result = await db.select<Rubric[]>(
+      `SELECT gr.* FROM grading_rubrics gr
+      JOIN subjects s ON gr.subject_id = s.id
+      WHERE s.user_id = $1`,
+      [userId]
+    );
+    setRubrics(result);
+  }
+
+  async function loadSemesters(userId: number) {
+    const db = await getDb();
+    const result = await db.select<Semester[]>(
+      "SELECT * FROM semesters WHERE user_id = $1 ORDER BY id DESC",
+      [userId]
+    );
+    setSemesters(result);
+    if (result.length > 0) {
+      setScheduleSemesterId((prev) => prev ?? result[0].id);
+      setGradesSemesterId((prev) => prev ?? result[0].id);
+    }
+  }
+
   async function refreshUser(userId: number) {
     const db = await getDb();
     const [updated] = await db.select<User[]>(
@@ -123,6 +172,7 @@ function App() {
       loadTasks(user.id);
       loadSubjects(user.id);
       loadScheduleSlots(user.id);
+      loadRubrics(user.id);
     }
   }, [user?.id]);
 
@@ -190,11 +240,11 @@ function App() {
   // ---- Horario / Materias ----
 
   async function handleCreateAndAssign(name: string, color: string) {
-    if (!user || !pickerCell) return;
+    if (!user || !pickerCell || !scheduleSemesterId) return;
     const db = await getDb();
     await db.execute(
-      "INSERT INTO subjects (user_id, name, color) VALUES ($1, $2, $3)",
-      [user.id, name, color]
+      "INSERT INTO subjects (user_id, semester_id, name, color) VALUES ($1, $2, $3, $4)",
+      [user.id, scheduleSemesterId, name, color]
     );
     const [newSubject] = await db.select<Subject[]>(
       "SELECT * FROM subjects WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
@@ -257,20 +307,65 @@ function App() {
     await loadScheduleSlots(user.id);
   }
 
+// ----------------- Rubricas -----------------
+  async function handleAddRubric(
+    subjectId: number,
+    data: { name: string; weight: number; type: "manual" | "tasks"; taskTypeId: number | null }
+  ) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute(
+      "INSERT INTO grading_rubrics (subject_id, name, weight_percent, type, task_type_id) VALUES ($1, $2, $3, $4, $5)",
+      [subjectId, data.name, data.weight, data.type, data.taskTypeId]
+    );
+    await loadRubrics(user.id);
+  }
+
+  async function handleUpdateManualValue(rubricId: number, value: number) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute("UPDATE grading_rubrics SET manual_value = $1 WHERE id = $2", [value, rubricId]);
+    await loadRubrics(user.id);
+  }
+
+  async function handleDeleteRubric(id: number) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute("DELETE FROM grading_rubrics WHERE id = $1", [id]);
+    await loadRubrics(user.id);
+  }
+
   if (!user) {
     return <AuthForm onAuthenticated={setUser} />;
   }
 
+  // ----------------- Semestres -----------------
+  async function handleCreateSemester(name: string, target: "schedule" | "grades") {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute("INSERT INTO semesters (user_id, name) VALUES ($1, $2)", [user.id, name]);
+    const [newSemester] = await db.select<Semester[]>(
+      "SELECT * FROM semesters WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
+      [user.id]
+    );
+    await loadSemesters(user.id);
+    if (target === "schedule") setScheduleSemesterId(newSemester.id);
+    else setGradesSemesterId(newSemester.id);
+  }
+
   // ---- Datos derivados ----
 
-  const tasksByDate: Record<string, { count: number; hasOverdue: boolean }> = {};
+  const tasksByDate: Record<string, { pending: number; done: number; overdue: number }> = {};
   for (const t of tasks) {
     if (!tasksByDate[t.due_date]) {
-      tasksByDate[t.due_date] = { count: 0, hasOverdue: false };
+      tasksByDate[t.due_date] = { pending: 0, done: 0, overdue: 0 };
     }
-    tasksByDate[t.due_date].count += 1;
-    if (isOverdue(t.due_date, t.status)) {
-      tasksByDate[t.due_date].hasOverdue = true;
+    if (t.status === "done") {
+      tasksByDate[t.due_date].done += 1;
+    } else if (isOverdue(t.due_date, t.status)) {
+      tasksByDate[t.due_date].overdue += 1;
+    } else {
+      tasksByDate[t.due_date].pending += 1;
     }
   }
 
@@ -441,17 +536,27 @@ function App() {
         )}
 
         {currentPage === "schedule" && (
-          <div style={{ maxWidth: 1300, margin: "0 auto" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+            <SemesterSelector
+              semesters={semesters}
+              selectedId={scheduleSemesterId}
+              onSelect={setScheduleSemesterId}
+              onCreate={(name) => handleCreateSemester(name, "schedule")}
+            />
+
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
               <div style={{ flex: 2, minWidth: 500 }}>
                 <ScheduleView
-                  slots={scheduleSlots}
-                  subjects={subjects}
+                  slots={scheduleSlots.filter((slot) => {
+                    const subj = subjects.find((s) => s.id === slot.subject_id);
+                    return subj?.semester_id === scheduleSemesterId;
+                  })}
+                  subjects={subjects.filter((s) => s.semester_id === scheduleSemesterId)}
                   onCellClick={(day, hour) => setPickerCell({ day, hour })}
                 />
               </div>
               <SubjectsManager
-                subjects={subjects}
+                subjects={subjects.filter((s) => s.semester_id === scheduleSemesterId)}
                 onToggleEnabled={handleToggleSubjectEnabled}
                 onDelete={handleDeleteSubject}
               />
@@ -459,6 +564,27 @@ function App() {
           </div>
         )}
 
+        {currentPage === "grades" && (
+          <div style={{ maxWidth: 700, margin: "0 auto" }}>
+            <h2>Calificaciones</h2>
+            <SemesterSelector
+              semesters={semesters}
+              selectedId={gradesSemesterId}
+              onSelect={setGradesSemesterId}
+              onCreate={(name) => handleCreateSemester(name, "grades")}
+            />
+            <GradesView
+              subjects={subjects.filter((s) => s.semester_id === gradesSemesterId)}
+              taskTypes={taskTypes}
+              tasks={tasks}
+              rubrics={rubrics}
+              onAddRubric={handleAddRubric}
+              onUpdateManualValue={handleUpdateManualValue}
+              onDeleteRubric={handleDeleteRubric}
+            />
+          </div>
+        )}
+        
         {currentPage === "settings" && <SettingsView />}
 
         {selectedDate && (

@@ -57,7 +57,7 @@ function CompleteTaskModal({ task, taskType, onClose, onConfirm }: CompleteTaskM
             max={100}
             value={grade}
             onChange={(e) => setGrade(Number(e.target.value))}
-            style={{ width: "100%", marginTop: 12 }}
+            style={{ width: "90%", marginTop: 12 }}
           />
         </div>
 

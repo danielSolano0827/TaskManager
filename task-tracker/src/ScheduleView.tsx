@@ -36,12 +36,12 @@ function ScheduleView({ slots, subjects, onCellClick }: ScheduleViewProps) {
     <div>
       <h2 style={{ marginBottom: 16 }}>Horario de clases</h2>
 
-      <div style={{ overflowX: "auto" }}>
+      <div>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "56px repeat(7, 1fr)",
-            minWidth: 820,
+            gridTemplateColumns: "48px repeat(7, minmax(0, 1fr))",
+            width: "100%",
             background: "#16263d",
             border: "1px solid #2a4a6b",
             borderRadius: 14,

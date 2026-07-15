@@ -12,6 +12,7 @@ interface SidebarProps {
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "📅" },
   { id: "schedule", label: "Horario", icon: "🗓️" },
+  { id: "grades", label: "Calificaciones", icon: "📊" },
   { id: "settings", label: "Configuración", icon: "⚙️" },
 ];
 
@@ -36,7 +37,13 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
       }}
     >
       <div style={{ marginBottom: 24, padding: "0 8px" }}>
-        <div style={{ fontWeight: 600, fontSize: 15 }}>{username}</div>
+        <div style={{ 
+          border: "1px solid #4ba4ec", 
+          borderRadius: 8,
+          padding: "10px 0", 
+          fontWeight: 600, 
+          fontSize: 22, 
+          textAlign: "center" }}>{username}</div>
       </div>
 
       <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>

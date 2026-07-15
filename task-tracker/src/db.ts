@@ -45,16 +45,43 @@ export async function getDb() {
         UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
       END
     `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS semesters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
 
     await db.execute(`
       CREATE TABLE IF NOT EXISTS subjects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
+        semester_id INTEGER NOT NULL,
         name VARCHAR(100) NOT NULL,
         color VARCHAR(20) DEFAULT '#4f9eff',
         enabled INTEGER NOT NULL DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (semester_id) REFERENCES semesters(id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS grading_rubrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject_id INTEGER NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        weight_percent REAL NOT NULL,
+        type VARCHAR(10) NOT NULL DEFAULT 'manual', -- 'manual' | 'tasks'
+        task_type_id INTEGER,
+        manual_value REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id),
+        FOREIGN KEY (task_type_id) REFERENCES task_types(id)
       )
     `);
 

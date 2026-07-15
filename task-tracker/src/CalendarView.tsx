@@ -2,8 +2,9 @@ import { useState } from "react";
 import { todayKey } from "./dateUtils";
 
 interface DayInfo {
-  count: number;
-  hasOverdue: boolean;
+  pending: number;
+  done: number;
+  overdue: number;
 }
 
 interface CalendarViewProps {
@@ -68,7 +69,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
           const dateKey = toDateKey(year, month, day);
           const info = tasksByDate[dateKey];
           const isToday = dateKey === tKey;
-          const hasOverdue = info?.hasOverdue ?? false;
+          const hasOverdue = (info?.overdue ?? 0) > 0;
 
           return (
             <button
@@ -90,30 +91,83 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
                 alignItems: "center",
                 justifyContent: "center",
                 position: "relative",
+                gap: 2,
               }}
             >
               <span>{day}</span>
-              {info && info.count > 0 && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    background: hasOverdue ? "#ff6b6b" : "#4f9eff",
-                    color: "white",
-                    borderRadius: "50%",
-                    width: 16,
-                    height: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginTop: 2,
-                  }}
-                >
-                  {info.count}
-                </span>
+              {info && (
+                <div style={{ display: "flex", gap: 3 }}>
+                  {info.pending > 0 && (
+                    <span
+                      title={`${info.pending} pendiente(s)`}
+                      style={{
+                        fontSize: 9,
+                        background: "#4f9eff",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: 14,
+                        height: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {info.pending}
+                    </span>
+                  )}
+                  {info.done > 0 && (
+                    <span
+                      title={`${info.done} completada(s)`}
+                      style={{
+                        fontSize: 9,
+                        background: "#51cf66",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: 14,
+                        height: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {info.done}
+                    </span>
+                  )}
+                  {info.overdue > 0 && (
+                    <span
+                      title={`${info.overdue} vencida(s)`}
+                      style={{
+                        fontSize: 9,
+                        background: "#ff6b6b",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: 14,
+                        height: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {info.overdue}
+                    </span>
+                  )}
+                </div>
               )}
             </button>
           );
         })}
+      </div>
+
+      <div style={{ display: "flex", gap: 16, marginTop: 12, fontSize: 12, opacity: 0.6, justifyContent: "center" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4f9eff", display: "inline-block" }} /> Pendiente
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#51cf66", display: "inline-block" }} /> Completada
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff6b6b", display: "inline-block" }} /> Vencida
+        </span>
       </div>
     </div>
   );
