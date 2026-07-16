@@ -28,8 +28,8 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
       style={{
         width: 200,
         minHeight: "100vh",
-        background: "#0b1522",
-        borderRight: "1px solid #2a4a6b",
+        background: "var(--bg-sunken)",
+        borderRight: "1px solid var(--border)",
         display: "flex",
         flexDirection: "column",
         padding: "20px 12px",
@@ -38,7 +38,7 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
     >
       <div style={{ marginBottom: 24, padding: "0 8px" }}>
         <div style={{ 
-          border: "1px solid #4ba4ec", 
+          border: "1px solid var(--border)", 
           borderRadius: 8,
           padding: "10px 0", 
           fontWeight: 600, 
@@ -60,8 +60,8 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
               borderRadius: 8,
               cursor: "pointer",
               textAlign: "left",
-              background: currentPage === item.id ? "#1e3a5f" : "transparent",
-              color: "#e8f0ff",
+              background: currentPage === item.id ? "var(--bg-surface-alt)" : "transparent",
+              color: "var(--text)",
               fontWeight: currentPage === item.id ? 600 : 400,
             }}
           >
@@ -79,11 +79,11 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
             alignItems: "center",
             gap: 10,
             padding: "10px 12px",
-            border: "1px solid #2a4a6b",
+            border: "1px solid var(--border)",
             borderRadius: 8,
             cursor: "pointer",
             background: "transparent",
-            color: "#e8f0ff",
+            color: "var(--text)",
           }}
         >
           <span>🚪</span>

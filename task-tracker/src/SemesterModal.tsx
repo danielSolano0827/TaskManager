@@ -19,7 +19,7 @@ function SemesterModal({ onClose, onSave }: SemesterModalProps) {
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}
       onClick={onClose}
     >
-      <div style={{ background: "#16263d", padding: 24, borderRadius: 10, width: 320 }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ background: "var(--bg-surface)", padding: 24, borderRadius: 10, width: 320 }} onClick={(e) => e.stopPropagation()}>
         <h3 style={{ marginTop: 0 }}>Nuevo semestre</h3>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <input

@@ -7,6 +7,7 @@ export interface User {
   points: number;
   level: number;
   rank: string;
+  theme: string;
 }
 
 export async function register(username: string, password: string): Promise<User> {
@@ -28,7 +29,7 @@ export async function register(username: string, password: string): Promise<User
   );
 
   const [user] = await db.select<User[]>(
-    "SELECT id, username, points, level, rank FROM users WHERE username = $1",
+    "SELECT id, username, points, level, rank, theme FROM users WHERE username = $1",
     [username]
   );
   return user;
@@ -38,7 +39,7 @@ export async function login(username: string, password: string): Promise<User> {
   const db = await getDb();
 
   const rows = await db.select<(User & { password_hash: string })[]>(
-    "SELECT id, username, password_hash, points, level, rank FROM users WHERE username = $1",
+    "SELECT id, username, password_hash, points, level, rank, theme FROM users WHERE username = $1",
     [username]
   );
 

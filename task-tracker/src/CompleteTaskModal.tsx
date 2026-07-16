@@ -57,7 +57,17 @@ function CompleteTaskModal({ task, taskType, onClose, onConfirm }: CompleteTaskM
             max={100}
             value={grade}
             onChange={(e) => setGrade(Number(e.target.value))}
-            style={{ width: "90%", marginTop: 12 }}
+            style={{
+              width: "88%",
+              marginTop: 20,
+              WebkitAppearance: "none",
+              appearance: "none",
+              height: 0,
+              borderRadius: 8,
+              background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${grade}%, var(--border) ${grade}%, var(--border) 100%)`,
+              outline: "none",
+              cursor: "pointer",
+            }}
           />
         </div>
 
@@ -70,14 +80,14 @@ function CompleteTaskModal({ task, taskType, onClose, onConfirm }: CompleteTaskM
           }}
         >
           <span style={{ opacity: 0.7 }}>Puntos a ganar: </span>
-          <strong style={{ color: "#4f9eff", fontSize: 18 }}>+{pointsPreview}</strong>
+          <strong style={{ color: "var(--accent)", fontSize: 18 }}>+{pointsPreview}</strong>
         </div>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
           <button onClick={onClose} style={{ padding: "8px 16px" }}>Cancelar</button>
           <button
             onClick={() => onConfirm(grade)}
-            style={{ padding: "8px 16px", background: "#4f9eff", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}
+            style={{ padding: "8px 16px", background: "var(--accent)", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}
           >
             Confirmar
           </button>

@@ -33,7 +33,7 @@ function SubjectPickerModal({
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}
       onClick={onClose}
     >
-      <div style={{ background: "#16263d", padding: 24, borderRadius: 10, width: 320 }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ background: "var(--bg-surface)", padding: 24, borderRadius: 10, width: 320 }} onClick={(e) => e.stopPropagation()}>
         <h3 style={{ marginTop: 0 }}>{dayLabel} · {hour}:00</h3>
 
         {subjects.length > 0 && (
@@ -75,7 +75,7 @@ function SubjectPickerModal({
                 onClick={() => setNewColor(c)}
                 style={{
                   width: 24, height: 24, borderRadius: "50%", background: c,
-                  border: newColor === c ? "2px solid white" : "1px solid #2a4a6b", padding: 0,
+                  border: newColor === c ? "2px solid white" : "1px solid var(--border)", padding: 0,
                 }}
               />
             ))}

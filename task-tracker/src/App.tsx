@@ -19,6 +19,9 @@ import "./App.css";
 interface Task {
   id: number;
   title: string;
+  emoji: string;
+  description: string | null;
+  tags: string | null;
   status: "pending" | "done";
   task_type_id: number;
   subject_id: number | null;
@@ -176,6 +179,10 @@ function App() {
     }
   }, [user?.id]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", user?.theme ?? "ocean");
+  }, [user?.theme]);
+
   function handleLogout() {
     setUser(null);
     setTasks([]);
@@ -189,20 +196,33 @@ function App() {
 
   // ---- Tareas ----
 
-  async function handleAddTask(
-    title: string,
-    taskTypeId: number,
-    subjectId: number | null,
-    priority: string
-  ) {
-    if (!user || !selectedDate) return;
-    const db = await getDb();
-    await db.execute(
-      "INSERT INTO tasks (user_id, task_type_id, subject_id, title, due_date, priority) VALUES ($1, $2, $3, $4, $5, $6)",
-      [user.id, taskTypeId, subjectId, title, selectedDate, priority]
-    );
-    await loadTasks(user.id);
-  }
+  async function handleAddTask(data: {
+  title: string;
+  emoji: string;
+  description: string;
+  tags: string;
+  taskTypeId: number;
+  subjectId: number | null;
+  priority: string;
+}) {
+  if (!user || !selectedDate) return;
+  const db = await getDb();
+  await db.execute(
+    "INSERT INTO tasks (user_id, task_type_id, subject_id, title, emoji, description, tags, due_date, priority) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+    [
+      user.id,
+      data.taskTypeId,
+      data.subjectId,
+      data.title,
+      data.emoji,
+      data.description || null,
+      data.tags || null,
+      selectedDate,
+      data.priority,
+    ]
+  );
+  await loadTasks(user.id);
+}
 
   async function handleConfirmComplete(grade: number) {
     if (!user || !taskToComplete) return;
@@ -353,6 +373,13 @@ function App() {
     else setGradesSemesterId(newSemester.id);
   }
 
+  // ----------------- Temas -----------------
+  async function handleThemeChange(theme: string) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute("UPDATE users SET theme = $1 WHERE id = $2", [theme, user.id]);
+    setUser({ ...user, theme });
+  }
   // ---- Datos derivados ----
 
   const tasksByDate: Record<string, { pending: number; done: number; overdue: number }> = {};
@@ -403,8 +430,8 @@ function App() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                background: "linear-gradient(135deg, #16263d 0%, #1e3a5f 100%)",
-                border: "1px solid #2a4a6b",
+                background: "linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-alt) 100%)",
+                border: "1px solid var(--border)",
                 borderRadius: 12,
                 padding: "20px 24px",
                 marginBottom: 24,
@@ -432,12 +459,12 @@ function App() {
                       {pointsIntoLevel}/{pointsForNextLevel} pts para nivel {user.level + 1}
                     </span>
                   </div>
-                  <div style={{ background: "#0f1b2d", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-page)", borderRadius: 6, height: 8, overflow: "hidden" }}>
                     <div
                       style={{
                         width: `${(pointsIntoLevel / pointsForNextLevel) * 100}%`,
                         height: "100%",
-                        background: "#4f9eff",
+                        background: "var(--accent)",
                         transition: "width 0.3s",
                       }}
                     />
@@ -461,12 +488,12 @@ function App() {
                         : "Rango máximo alcanzado"}
                     </span>
                   </div>
-                  <div style={{ background: "#0f1b2d", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-page)", borderRadius: 6, height: 8, overflow: "hidden" }}>
                     <div
                       style={{
                         width: nextRank ? `${(levelsIntoRank / levelsForNextRank) * 100}%` : "100%",
                         height: "100%",
-                        background: "#51cf66",
+                        background: "var(--success)",
                         transition: "width 0.3s",
                       }}
                     />
@@ -477,29 +504,29 @@ function App() {
               <div style={{ display: "flex", gap: 12 }}>
                 <div
                   style={{
-                    background: "#0f1b2d",
-                    border: "1px solid #2a4a6b",
+                    background: "var(--bg-page)",
+                    border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: "10px 16px",
                     textAlign: "center",
                     minWidth: 80,
                   }}
                 >
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "#4f9eff" }}>{user.level}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: "var(--accent)" }}>{user.level}</div>
                   <div style={{ fontSize: 11, opacity: 0.6 }}>Nivel</div>
                 </div>
 
                 <div
                   style={{
-                    background: "#0f1b2d",
-                    border: "1px solid #2a4a6b",
+                    background: "var(--bg-page)",
+                    border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: "10px 16px",
                     textAlign: "center",
                     minWidth: 80,
                   }}
                 >
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#e8f0ff", whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", whiteSpace: "nowrap" }}>
                     {user.rank}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.6 }}>Rango</div>
@@ -507,15 +534,15 @@ function App() {
 
                 <div
                   style={{
-                    background: "#0f1b2d",
-                    border: "1px solid #2a4a6b",
+                    background: "var(--bg-page)",
+                    border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: "10px 16px",
                     textAlign: "center",
                     minWidth: 80,
                   }}
                 >
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "#4f9eff" }}>{user.points}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: "var(--accent)" }}>{user.points}</div>
                   <div style={{ fontSize: 11, opacity: 0.6 }}>Puntos</div>
                 </div>
               </div>
@@ -536,7 +563,7 @@ function App() {
         )}
 
         {currentPage === "schedule" && (
-          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ maxWidth: 1500, margin: "0 auto" }}>
             <SemesterSelector
               semesters={semesters}
               selectedId={scheduleSemesterId}
@@ -544,23 +571,33 @@ function App() {
               onCreate={(name) => handleCreateSemester(name, "schedule")}
             />
 
-            <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div style={{ flex: 2, minWidth: 500 }}>
-                <ScheduleView
-                  slots={scheduleSlots.filter((slot) => {
-                    const subj = subjects.find((s) => s.id === slot.subject_id);
-                    return subj?.semester_id === scheduleSemesterId;
-                  })}
+            {semesters.length === 0 ? (
+              <p style={{ opacity: 0.6, textAlign: "center", marginTop: 40 }}>
+                No hay horarios creados. Crea uno con el botón "+ Semestre" de arriba.
+              </p>
+            ) : !scheduleSemesterId ? (
+              <p style={{ opacity: 0.6, textAlign: "center", marginTop: 40 }}>
+                No se ha seleccionado un horario.
+              </p>
+            ) : (
+              <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+                <div style={{ flex: 2, minWidth: 500 }}>
+                  <ScheduleView
+                    slots={scheduleSlots.filter((slot) => {
+                      const subj = subjects.find((s) => s.id === slot.subject_id);
+                      return subj?.semester_id === scheduleSemesterId;
+                    })}
+                    subjects={subjects.filter((s) => s.semester_id === scheduleSemesterId)}
+                    onCellClick={(day, hour) => setPickerCell({ day, hour })}
+                  />
+                </div>
+                <SubjectsManager
                   subjects={subjects.filter((s) => s.semester_id === scheduleSemesterId)}
-                  onCellClick={(day, hour) => setPickerCell({ day, hour })}
+                  onToggleEnabled={handleToggleSubjectEnabled}
+                  onDelete={handleDeleteSubject}
                 />
               </div>
-              <SubjectsManager
-                subjects={subjects.filter((s) => s.semester_id === scheduleSemesterId)}
-                onToggleEnabled={handleToggleSubjectEnabled}
-                onDelete={handleDeleteSubject}
-              />
-            </div>
+            )}
           </div>
         )}
 
@@ -585,7 +622,9 @@ function App() {
           </div>
         )}
         
-        {currentPage === "settings" && <SettingsView />}
+        {currentPage === "settings" && (
+          <SettingsView currentTheme={user.theme} onThemeChange={handleThemeChange} />
+        )}
 
         {selectedDate && (
           <TaskModal

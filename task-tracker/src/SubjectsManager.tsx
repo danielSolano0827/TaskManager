@@ -28,8 +28,8 @@ function SubjectsManager({ subjects, onToggleEnabled, onDelete }: SubjectsManage
               display: "flex",
               alignItems: "center",
               gap: 10,
-              background: "#16263d",
-              border: "1px solid #2a4a6b",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border)",
               borderRadius: 8,
               padding: "10px 12px",
             }}

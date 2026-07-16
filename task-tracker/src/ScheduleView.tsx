@@ -42,23 +42,23 @@ function ScheduleView({ slots, subjects, onCellClick }: ScheduleViewProps) {
             display: "grid",
             gridTemplateColumns: "48px repeat(7, minmax(0, 1fr))",
             width: "100%",
-            background: "#16263d",
-            border: "1px solid #2a4a6b",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
             borderRadius: 14,
             overflow: "hidden",
           }}
         >
           {/* Header row */}
-          <div style={{ background: "#0f1b2d", borderBottom: "1px solid #2a4a6b" }} />
+          <div style={{ background: "var(--bg-page)", borderBottom: "1px solid var(--border)" }} />
           {DAYS.map((d, i) => (
             <div
               key={d}
               style={{
                 textAlign: "center",
                 padding: "12px 4px",
-                background: i === todayIdx ? "#1e3a5f" : "#0f1b2d",
-                borderBottom: "1px solid #2a4a6b",
-                borderLeft: "1px solid #2a4a6b",
+                background: i === todayIdx ? "var(--bg-surface-alt)" : "var(--bg-page)",
+                borderBottom: "1px solid var(--border)",
+                borderLeft: "1px solid var(--border)",
               }}
             >
               <div style={{ fontWeight: 600, fontSize: 13 }}>{DAYS_SHORT[i]}</div>
@@ -76,7 +76,7 @@ function ScheduleView({ slots, subjects, onCellClick }: ScheduleViewProps) {
                   textAlign: "right",
                   paddingRight: 8,
                   paddingTop: 6,
-                  borderTop: rowIdx > 0 ? "1px solid #22364f" : "none",
+                  borderTop: rowIdx > 0 ? "1px solid var(--border-subtle)" : "none",
                 }}
               >
                 {hour}:00
@@ -91,19 +91,19 @@ function ScheduleView({ slots, subjects, onCellClick }: ScheduleViewProps) {
                     key={`${day}-${hour}`}
                     onClick={() => onCellClick(day, hour)}
                     style={{
-                      borderTop: rowIdx > 0 ? "1px solid #22364f" : "none",
-                      borderLeft: "1px solid #22364f",
+                      borderTop: rowIdx > 0 ? "1px solid var(--border-subtle)" : "none",
+                      borderLeft: "1px solid var(--border-subtle)",
                       minHeight: 46,
                       padding: 3,
                       boxSizing: "border-box",
-                      background: day === todayIdx ? "rgba(79,158,255,0.05)" : "transparent",
+                      background: day === todayIdx ? "var(--accent-tint)" : "transparent",
                       cursor: "pointer",
                     }}
                     onMouseEnter={(e) => {
-                      if (!subject) e.currentTarget.style.background = "rgba(79,158,255,0.12)";
+                      if (!subject) e.currentTarget.style.background = "var(--accent-tint)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = day === todayIdx ? "rgba(79,158,255,0.05)" : "transparent";
+                      e.currentTarget.style.background = day === todayIdx ? "var(--accent-tint)" : "transparent";
                     }}
                   >
                     {subject && (
@@ -124,7 +124,7 @@ function ScheduleView({ slots, subjects, onCellClick }: ScheduleViewProps) {
                         <span
                           style={{
                             color: "white",
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: 600,
                             lineHeight: 1.2,
                             overflow: "hidden",

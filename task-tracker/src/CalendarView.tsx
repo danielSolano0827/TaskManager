@@ -78,12 +78,12 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
               style={{
                 aspectRatio: "1",
                 border: hasOverdue
-                  ? "2px solid #ff6b6b"
+                  ? "2px solid var(--danger)"
                   : isToday
-                  ? "2px solid #4f9eff"
-                  : "1px solid #2a4a6b",
+                  ? "2px solid var(--accent)"
+                  : "1px solid var(--border)",
                 borderRadius: 6,
-                background: hasOverdue ? "rgba(255,107,107,0.1)" : "transparent",
+                background: hasOverdue ? "var(--danger-tint)" : "transparent",
                 color: "inherit",
                 cursor: "pointer",
                 display: "flex",
@@ -102,7 +102,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
                       title={`${info.pending} pendiente(s)`}
                       style={{
                         fontSize: 9,
-                        background: "#4f9eff",
+                        background: "var(--accent)",
                         color: "white",
                         borderRadius: "50%",
                         width: 14,
@@ -120,7 +120,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
                       title={`${info.done} completada(s)`}
                       style={{
                         fontSize: 9,
-                        background: "#51cf66",
+                        background: "var(--success)",
                         color: "white",
                         borderRadius: "50%",
                         width: 14,
@@ -138,7 +138,7 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
                       title={`${info.overdue} vencida(s)`}
                       style={{
                         fontSize: 9,
-                        background: "#ff6b6b",
+                        background: "var(--danger)",
                         color: "white",
                         borderRadius: "50%",
                         width: 14,
@@ -160,13 +160,13 @@ function CalendarView({ tasksByDate, onSelectDay }: CalendarViewProps) {
 
       <div style={{ display: "flex", gap: 16, marginTop: 12, fontSize: 12, opacity: 0.6, justifyContent: "center" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#4f9eff", display: "inline-block" }} /> Pendiente
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} /> Pendiente
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#51cf66", display: "inline-block" }} /> Completada
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)", display: "inline-block" }} /> Completada
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff6b6b", display: "inline-block" }} /> Vencida
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--danger)", display: "inline-block" }} /> Vencida
         </span>
       </div>
     </div>

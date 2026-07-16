@@ -32,8 +32,8 @@ function ConfirmModal({
     >
       <div
         style={{
-          background: "#16263d",
-          border: "1px solid #2a4a6b",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
           borderRadius: 12,
           padding: 28,
           width: 320,
@@ -46,7 +46,7 @@ function ConfirmModal({
             width: 48,
             height: 48,
             borderRadius: "50%",
-            background: danger ? "rgba(255,107,107,0.15)" : "rgba(79,158,255,0.15)",
+            background: danger ? "var(--danger-tint)" : "var(--accent-tint)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -68,7 +68,7 @@ function ConfirmModal({
             onClick={onConfirm}
             style={{
               padding: "10px 20px",
-              background: danger ? "#ff6b6b" : "#4f9eff",
+              background: danger ? "var(--danger)" : "var(--accent)",
               border: "none",
               borderRadius: 8,
               color: "white",

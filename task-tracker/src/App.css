@@ -1,108 +1,142 @@
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+:root,
+[data-theme="ocean"] {
+  --bg-page: #0f1b2d;
+  --bg-surface: #16263d;
+  --bg-surface-alt: #1e3a5f;
+  --bg-sunken: #0b1522;
+  --border: #2a4a6b;
+  --border-subtle: #22364f;
+  --text: #e8f0ff;
+  --text-dim: rgba(232, 240, 255, 0.6);
+  --accent: #4f9eff;
+  --accent-hover: #7ab8ff;
+  --success: #51cf66;
+  --warning: #ffd43b;
+  --danger: #ff6b6b;
+}
 
-  color: #e8f0ff;
-  background-color: #0f1b2d;
+[data-theme="forest"] {
+  --bg-page: #0f2318;
+  --bg-surface: #16321f;
+  --bg-surface-alt: #1e4a2c;
+  --bg-sunken: #0b1a11;
+  --border: #2a5c3a;
+  --border-subtle: #224a30;
+  --text: #e8ffef;
+  --text-dim: rgba(232, 255, 239, 0.6);
+  --accent: #4fd97e;
+  --accent-hover: #7aeba3;
+  --success: #51cf66;
+  --warning: #ffd43b;
+  --danger: #ff6b6b;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+[data-theme="sunset"] {
+  --bg-page: #2d150f;
+  --bg-surface: #3d201a;
+  --bg-surface-alt: #5f2f1e;
+  --bg-sunken: #22120b;
+  --border: #6b3a2a;
+  --border-subtle: #4f2f22;
+  --text: #fff0e8;
+  --text-dim: rgba(255, 240, 232, 0.6);
+  --accent: #ff8f4f;
+  --accent-hover: #ffb37a;
+  --success: #51cf66;
+  --warning: #ffd43b;
+  --danger: #ff6b6b;
+}
+
+[data-theme="violet"] {
+  --bg-page: #1d0f2d;
+  --bg-surface: #291a3d;
+  --bg-surface-alt: #3f1e5f;
+  --bg-sunken: #150b22;
+  --border: #4a2a6b;
+  --border-subtle: #3a2250;
+  --text: #f0e8ff;
+  --text-dim: rgba(240, 232, 255, 0.6);
+  --accent: #b04fff;
+  --accent-hover: #cc7aff;
+  --success: #51cf66;
+  --warning: #ffd43b;
+  --danger: #ff6b6b;
 }
 
 body {
-  background: #0f1b2d;
-  color: #e8f0ff;
+  background: var(--bg-page);
+  color: var(--text);
   margin: 0;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #4f9eff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #7ab8ff;
-}
-
-h1, h2, h3 {
-  text-align: center;
-  color: #e8f0ff;
 }
 
 input,
 select,
+textarea,
 button {
   border-radius: 8px;
-  border: 1px solid #2a4a6b;
+  border: 1px solid var(--border);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #e8f0ff;
-  background-color: #16263d;
+  color: var(--text);
+  background-color: var(--bg-surface);
   transition: border-color 0.25s, background-color 0.25s;
 }
 
 button {
   cursor: pointer;
-  background-color: #1e3a5f;
+  background-color: var(--bg-surface-alt);
 }
 
 button:hover {
-  border-color: #4f9eff;
-  background-color: #2a4a6b;
+  border-color: var(--accent);
+  background-color: var(--border);
 }
 
 button:active {
-  border-color: #4f9eff;
-  background-color: #1e3a5f;
+  border-color: var(--accent);
+  background-color: var(--bg-surface-alt);
 }
 
 input,
 select,
+textarea,
 button {
   outline: none;
 }
 
-#greet-input {
-  margin-right: 5px;
+a {
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+h1, h2, h3 {
+  text-align: center;
+  color: var(--text);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
 }

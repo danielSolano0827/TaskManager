@@ -1,7 +1,92 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
+import ThemeSelector from "./ThemeOption";
 import { setFullscreen, setMaximized, isFullscreen, isMaximized } from "./windowControls";
 
-function SettingsView() {
+interface ToggleRowProps {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+function ToggleRow({ label, description, checked, onChange }: ToggleRowProps) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0" }}>
+      <div>
+        <div style={{ fontWeight: 500, fontSize: 14 }}>{label}</div>
+        <div style={{ fontSize: 12, opacity: 0.6, marginTop: 2 }}>{description}</div>
+      </div>
+      <label style={{ position: "relative", display: "inline-block", width: 44, height: 24, flexShrink: 0 }}>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          style={{ opacity: 0, width: 0, height: 0 }}
+        />
+        <span
+          onClick={() => onChange(!checked)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: checked ? "var(--accent)" : "var(--border)",
+            borderRadius: 24,
+            transition: "0.2s",
+            cursor: "pointer",
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              top: 3,
+              left: checked ? 23 : 3,
+              width: 18,
+              height: 18,
+              background: "white",
+              borderRadius: "50%",
+              transition: "0.2s",
+            }}
+          />
+        </span>
+      </label>
+    </div>
+  );
+}
+
+interface SettingsSectionProps {
+  title: string;
+  children: ReactNode;
+}
+
+function SettingsSection({ title, children }: SettingsSectionProps) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <h3 style={{ fontSize: 14, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10, textAlign: "left" }}>
+        {title}
+      </h3>
+      <div
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          padding: "4px 16px",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Divider() {
+  return <div style={{ borderTop: "1px solid var(--border)" }} />;
+}
+
+interface SettingsViewProps {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}
+
+function SettingsView({ currentTheme, onThemeChange }: SettingsViewProps) {
   const [fullscreen, setFullscreenState] = useState(false);
   const [maximized, setMaximizedState] = useState(false);
 
@@ -25,98 +110,32 @@ function SettingsView() {
   }
 
   return (
-    <div style={{ maxWidth: 500, margin: "0 auto" }}>
-      <h2>Configuración</h2>
+    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <h2 style={{ marginBottom: 24 }}>Configuración</h2>
 
-      <div
-        style={{
-          background: "#16263d",
-          border: "1px solid #2a4a6b",
-          borderRadius: 10,
-          padding: 20,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontWeight: 500 }}>Pantalla completa</div>
-            <div style={{ fontSize: 12, opacity: 0.6 }}>Oculta bordes y barra de tareas</div>
-          </div>
-          <label style={{ position: "relative", display: "inline-block", width: 44, height: 24 }}>
-            <input
-              type="checkbox"
-              checked={fullscreen}
-              onChange={(e) => handleFullscreenToggle(e.target.checked)}
-              style={{ opacity: 0, width: 0, height: 0 }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: fullscreen ? "#4f9eff" : "#2a4a6b",
-                borderRadius: 24,
-                transition: "0.2s",
-                cursor: "pointer",
-              }}
-              onClick={() => handleFullscreenToggle(!fullscreen)}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: 3,
-                  left: fullscreen ? 23 : 3,
-                  width: 18,
-                  height: 18,
-                  background: "white",
-                  borderRadius: "50%",
-                  transition: "0.2s",
-                }}
-              />
-            </span>
-          </label>
+      <SettingsSection title="Apariencia">
+        <div style={{ padding: "12px 0" }}>
+          <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 4 }}>Tema de color</div>
+          <div style={{ fontSize: 12, opacity: 0.6 }}>Elige la paleta de colores de la app</div>
+          <ThemeSelector current={currentTheme} onSelect={onThemeChange} />
         </div>
+      </SettingsSection>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontWeight: 500 }}>Ventana maximizada</div>
-            <div style={{ fontSize: 12, opacity: 0.6 }}>Ocupa toda la pantalla con bordes normales</div>
-          </div>
-          <label style={{ position: "relative", display: "inline-block", width: 44, height: 24 }}>
-            <input
-              type="checkbox"
-              checked={maximized}
-              onChange={(e) => handleMaximizedToggle(e.target.checked)}
-              style={{ opacity: 0, width: 0, height: 0 }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: maximized ? "#4f9eff" : "#2a4a6b",
-                borderRadius: 24,
-                transition: "0.2s",
-                cursor: "pointer",
-              }}
-              onClick={() => handleMaximizedToggle(!maximized)}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: 3,
-                  left: maximized ? 23 : 3,
-                  width: 18,
-                  height: 18,
-                  background: "white",
-                  borderRadius: "50%",
-                  transition: "0.2s",
-                }}
-              />
-            </span>
-          </label>
-        </div>
-      </div>
+      <SettingsSection title="Ventana">
+        <ToggleRow
+          label="Pantalla completa"
+          description="Oculta bordes y barra de tareas"
+          checked={fullscreen}
+          onChange={handleFullscreenToggle}
+        />
+        <Divider />
+        <ToggleRow
+          label="Ventana maximizada"
+          description="Ocupa toda la pantalla con bordes normales"
+          checked={maximized}
+          onChange={handleMaximizedToggle}
+        />
+      </SettingsSection>
     </div>
   );
 }

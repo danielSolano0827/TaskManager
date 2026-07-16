@@ -104,8 +104,8 @@ function GradesView({ subjects, taskTypes, tasks, rubrics, onAddRubric, onUpdate
         <>
           <div
             style={{
-              background: passed ? "rgba(81,207,102,0.1)" : "rgba(255,107,107,0.1)",
-              border: `1px solid ${passed ? "#51cf66" : "#ff6b6b"}`,
+              background: passed ? "var(--success-tint)" : "var(--danger-tint)",
+              border: `1px solid ${passed ? "var(--success)" : "var(--danger)"}`,
               borderRadius: 12,
               padding: "20px 24px",
               marginBottom: 20,
@@ -115,7 +115,7 @@ function GradesView({ subjects, taskTypes, tasks, rubrics, onAddRubric, onUpdate
             }}
           >
             <div>
-              <div style={{ fontSize: 32, fontWeight: 700, color: passed ? "#51cf66" : "#ff6b6b" }}>
+              <div style={{ fontSize: 32, fontWeight: 700, color: passed ? "var(--success)" : "var(--danger)" }}>
                 {totalScore.toFixed(1)}
               </div>
               <div style={{ fontSize: 13, opacity: 0.7 }}>
@@ -123,7 +123,7 @@ function GradesView({ subjects, taskTypes, tasks, rubrics, onAddRubric, onUpdate
               </div>
             </div>
             {totalWeight !== 100 && (
-              <div style={{ fontSize: 12, color: "#ffd43b", textAlign: "right" }}>
+              <div style={{ fontSize: 12, color: "var(--warning)", textAlign: "right" }}>
                 ⚠️ Los rubros suman {totalWeight}%, no 100%
               </div>
             )}
@@ -145,8 +145,8 @@ function GradesView({ subjects, taskTypes, tasks, rubrics, onAddRubric, onUpdate
                 <li
                   key={rubric.id}
                   style={{
-                    background: "#16263d",
-                    border: "1px solid #2a4a6b",
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border)",
                     borderRadius: 10,
                     padding: "14px 16px",
                   }}
@@ -163,12 +163,12 @@ function GradesView({ subjects, taskTypes, tasks, rubrics, onAddRubric, onUpdate
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ flex: 1, background: "#0f1b2d", borderRadius: 6, height: 8, overflow: "hidden" }}>
+                    <div style={{ flex: 1, background: "var(--bg-page)", borderRadius: 6, height: 8, overflow: "hidden" }}>
                       <div
                         style={{
                           width: `${Math.min(value, 100)}%`,
                           height: "100%",
-                          background: "#4f9eff",
+                          background: "var(--accent)",
                         }}
                       />
                     </div>

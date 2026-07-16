@@ -3,6 +3,8 @@ import { isOverdue } from "./dateUtils";
 interface Task {
   id: number;
   title: string;
+  emoji: string;
+  tags: string | null;
   status: "pending" | "done";
   task_type_id: number;
   subject_id: number | null;
@@ -30,10 +32,15 @@ interface UpcomingTasksListProps {
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  baja: "#51cf66",
-  media: "#ffd43b",
-  alta: "#ff6b6b",
+  baja: "var(--success)",
+  media: "var(--warning)",
+  alta: "var(--danger)",
 };
+
+function parseTags(tags: string | null): string[] {
+  if (!tags) return [];
+  return tags.split(",").map((t) => t.trim()).filter(Boolean);
+}
 
 function formatDate(dateStr: string): string {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -65,6 +72,8 @@ function UpcomingTasksList({ tasks, taskTypes, subjects, onSelectTask }: Upcomin
       <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
         {pending.map((task) => {
           const overdue = isOverdue(task.due_date, task.status);
+          const tagList = parseTags(task.tags);
+
           return (
             <li
               key={task.id}
@@ -72,36 +81,63 @@ function UpcomingTasksList({ tasks, taskTypes, subjects, onSelectTask }: Upcomin
               style={{
                 display: "flex",
                 alignItems: "flex-start",
+                justifyContent: "space-between",
                 gap: 8,
-                background: overdue ? "rgba(255,107,107,0.08)" : "#16263d",
-                border: overdue ? "1px solid #ff6b6b" : "1px solid #2a4a6b",
+                background: overdue ? "var(--danger-tint)" : "var(--bg-surface)",
+                border: overdue ? "1px solid var(--danger)" : "1px solid var(--border)",
                 borderRadius: 8,
                 padding: "10px 12px",
                 cursor: "pointer",
               }}
             >
-              <span
-                title={`Prioridad ${task.priority}`}
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  background: PRIORITY_COLORS[task.priority] ?? "#888",
-                  marginTop: 4,
-                  flexShrink: 0,
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 500, color: overdue ? "#ff9b9b" : "inherit" }}>
-                  {task.title}
-                </div>
-                <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>
-                  {typeName(task.task_type_id)}
-                  {subjectName(task.subject_id) && ` · ${subjectName(task.subject_id)}`}
-                  {` · ${formatDate(task.due_date)}`}
-                  {overdue && " · Vencida"}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, minWidth: 0 }}>
+                <span
+                  title={`Prioridad ${task.priority}`}
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    background: PRIORITY_COLORS[task.priority] ?? "#888",
+                    marginTop: 6,
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 15 }}>{task.emoji}</span>
+                    <span style={{ fontWeight: 500, color: overdue ? "var(--danger)" : "inherit" }}>
+                      {task.title}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>
+                    {typeName(task.task_type_id)}
+                    {subjectName(task.subject_id) && ` · ${subjectName(task.subject_id)}`}
+                    {` · ${formatDate(task.due_date)}`}
+                    {overdue && " · Vencida"}
+                  </div>
                 </div>
               </div>
+
+              {tagList.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignItems: "flex-start", gap: 4, flexShrink: 0, maxWidth: "45%" }}>
+                  {tagList.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{
+                        fontSize: 10,
+                        background: "var(--bg-surface-alt)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 10,
+                        padding: "2px 8px",
+                        opacity: 0.85,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}

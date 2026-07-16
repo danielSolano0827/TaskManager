@@ -38,13 +38,13 @@ function AuthForm({ onAuthenticated }: AuthProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(circle at 30% 20%, #1e3a5f 0%, #0f1b2d 60%)",
+        background: "radial-gradient(circle at 30% 20%, var(--bg-surface-alt) 0%, var(--bg-page) 60%)",
       }}
     >
       <div
         style={{
-          background: "#16263d",
-          border: "1px solid #2a4a6b",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
           borderRadius: 16,
           padding: "48px 40px",
           width: 380,
@@ -80,7 +80,7 @@ function AuthForm({ onAuthenticated }: AuthProps) {
             style={{ padding: 12, fontSize: 15 }}
           />
 
-          {error && <p style={{ color: "#ff6b6b", margin: 0, fontSize: 13 }}>{error}</p>}
+          {error && <p style={{ color: "var(--danger)", margin: 0, fontSize: 13 }}>{error}</p>}
 
           <button
             type="submit"
@@ -88,7 +88,7 @@ function AuthForm({ onAuthenticated }: AuthProps) {
             style={{
               padding: 12,
               fontSize: 15,
-              background: "#4f9eff",
+              background: "var(--accent)",
               border: "none",
               borderRadius: 8,
               color: "white",
@@ -109,7 +109,7 @@ function AuthForm({ onAuthenticated }: AuthProps) {
               setMode(mode === "login" ? "register" : "login");
               setError("");
             }}
-            style={{ background: "none", border: "none", color: "#4f9eff", textDecoration: "underline", cursor: "pointer", padding: 0, fontSize: 14 }}
+            style={{ background: "none", border: "none", color: "var(--accent)", textDecoration: "underline", cursor: "pointer", padding: 0, fontSize: 14 }}
           >
             {mode === "login" ? "Regístrate" : "Inicia sesión"}
           </button>

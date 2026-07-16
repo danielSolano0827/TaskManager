@@ -33,6 +33,7 @@ export async function getDb() {
         points INTEGER DEFAULT 0,
         level INTEGER DEFAULT 1,
         rank VARCHAR(30) DEFAULT 'Vagazo',
+        theme VARCHAR(20) DEFAULT 'ocean',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -105,6 +106,9 @@ export async function getDb() {
         task_type_id INTEGER NOT NULL,
         subject_id INTEGER,
         title VARCHAR(150) NOT NULL,
+        emoji VARCHAR(10) DEFAULT '📌',
+        description VARCHAR(500),
+        tags VARCHAR(255),
         status VARCHAR(20) DEFAULT 'pending',
         priority VARCHAR(10) DEFAULT 'media',
         grade REAL,
