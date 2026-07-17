@@ -10,10 +10,11 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: "📅" },
-  { id: "schedule", label: "Horario", icon: "🗓️" },
-  { id: "grades", label: "Calificaciones", icon: "📊" },
-  { id: "settings", label: "Configuración", icon: "⚙️" },
+  { id: "dashboard", label: "Dashboard", icon: "♠️" },
+  { id: "schedule", label: "Horario", icon: "♦️" },
+  { id: "grades", label: "Calificaciones", icon: "♣️" },
+  { id: "books", label: "Biblioteca", icon: "♥️" },
+  { id: "settings", label: "Configuración", icon: "♟️" },
 ];
 
 function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) {
@@ -86,7 +87,7 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
             color: "var(--text)",
           }}
         >
-          <span>🚪</span>
+          <span>☄️</span>
           <span>Cerrar sesión</span>
         </button>
 

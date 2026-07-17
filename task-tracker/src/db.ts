@@ -129,6 +129,34 @@ export async function getDb() {
         UPDATE tasks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
       END
     `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title VARCHAR(200) NOT NULL,
+        author VARCHAR(150),
+        genre VARCHAR(80),
+        year INTEGER,
+        total_pages INTEGER,
+        pages_read INTEGER DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'reading',
+        rating INTEGER,
+        notes VARCHAR(1000),
+        cover_image TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TRIGGER IF NOT EXISTS trg_books_updated_at
+      AFTER UPDATE ON books
+      BEGIN
+        UPDATE books SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+      END
+    `);
   }
   return db;
 }

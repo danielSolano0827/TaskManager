@@ -13,6 +13,7 @@ import SubjectPickerModal from "./SubjectPickerModal";
 import GradesView from "./GradesView";
 import SettingsView from "./SettingsView";
 import SemesterSelector from "./SemesterSelector";
+import BooksView from "./BooksView";
 import { User } from "./auth";
 import "./App.css";
 
@@ -67,12 +68,26 @@ interface Semester {
   name: string;
 }
 
+interface Book {
+  id: number;
+  title: string;
+  author: string | null;
+  genre: string | null;
+  year: number | null;
+  total_pages: number | null;
+  pages_read: number;
+  status: "reading" | "completed" | "paused" | "wishlist";
+  rating: number | null;
+  notes: string | null;
+  cover_image: string | null;
+}
+
 const RANK_THRESHOLDS = [
   { rank: "Vagazo", minLevel: 1 },
-  { rank: "Aprendiz", minLevel: 3 },
-  { rank: "Competente", minLevel: 6 },
-  { rank: "Experto", minLevel: 11 },
-  { rank: "Maestro", minLevel: 21 },
+  { rank: "Vago", minLevel: 3 },
+  { rank: "Normal", minLevel: 6 },
+  { rank: "Volado", minLevel: 11 },
+  { rank: "Saico", minLevel: 21 },
 ];
 
 function computeRank(level: number): string {
@@ -101,6 +116,8 @@ function App() {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [scheduleSemesterId, setScheduleSemesterId] = useState<number | null>(null);
   const [gradesSemesterId, setGradesSemesterId] = useState<number | null>(null);
+
+  const [books, setBooks] = useState<Book[]>([]);
 
   //Funciones de carga de datos desde la base de datos
   async function loadTaskTypes() {
@@ -160,6 +177,15 @@ function App() {
     }
   }
 
+  async function loadBooks(userId: number) {
+    const db = await getDb();
+    const result = await db.select<Book[]>(
+      "SELECT * FROM books WHERE user_id = $1 ORDER BY updated_at DESC",
+      [userId]
+    );
+    setBooks(result);
+  }
+
   async function refreshUser(userId: number) {
     const db = await getDb();
     const [updated] = await db.select<User[]>(
@@ -176,6 +202,8 @@ function App() {
       loadSubjects(user.id);
       loadScheduleSlots(user.id);
       loadRubrics(user.id);
+      loadSemesters(user.id);
+      loadBooks(user.id);
     }
   }, [user?.id]);
 
@@ -379,6 +407,41 @@ function App() {
     const db = await getDb();
     await db.execute("UPDATE users SET theme = $1 WHERE id = $2", [theme, user.id]);
     setUser({ ...user, theme });
+  }
+
+  // ----------------- Libros -----------------
+  async function handleAddBook(data: any) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute(
+      `INSERT INTO books (user_id, title, author, genre, year, total_pages, pages_read, status, rating, notes, cover_image)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        user.id, data.title, data.author || null, data.genre || null, data.year,
+        data.totalPages, data.pagesRead, data.status, data.rating, data.notes || null, data.coverImage,
+      ]
+    );
+    await loadBooks(user.id);
+  }
+
+  async function handleUpdateBook(id: number, data: any) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute(
+      `UPDATE books SET title=$1, author=$2, genre=$3, year=$4, total_pages=$5, pages_read=$6, status=$7, rating=$8, notes=$9, cover_image=$10 WHERE id=$11`,
+      [
+        data.title, data.author || null, data.genre || null, data.year,
+        data.totalPages, data.pagesRead, data.status, data.rating, data.notes || null, data.coverImage, id,
+      ]
+    );
+    await loadBooks(user.id);
+  }
+
+  async function handleDeleteBook(id: number) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute("DELETE FROM books WHERE id = $1", [id]);
+    await loadBooks(user.id);
   }
   // ---- Datos derivados ----
 
@@ -624,6 +687,15 @@ function App() {
         
         {currentPage === "settings" && (
           <SettingsView currentTheme={user.theme} onThemeChange={handleThemeChange} />
+        )}
+
+        {currentPage === "books" && (
+          <BooksView
+            books={books}
+            onAdd={handleAddBook}
+            onUpdate={handleUpdateBook}
+            onDelete={handleDeleteBook}
+          />
         )}
 
         {selectedDate && (
