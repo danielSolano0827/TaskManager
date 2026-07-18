@@ -27,21 +27,24 @@ interface Subject {
   color: string;
 }
 
+interface TaskFormData {
+  title: string;
+  emoji: string;
+  description: string;
+  tags: string;
+  taskTypeId: number;
+  subjectId: number | null;
+  priority: string;
+}
+
 interface TaskModalProps {
   date: string;
   tasks: Task[];
   taskTypes: TaskType[];
   subjects: Subject[];
   onClose: () => void;
-  onAddTask: (data: {
-    title: string;
-    emoji: string;
-    description: string;
-    tags: string;
-    taskTypeId: number;
-    subjectId: number | null;
-    priority: string;
-  }) => void;
+  onAddTask: (data: TaskFormData) => void;
+  onEditTask: (taskId: number, data: TaskFormData) => void;
   onCompleteTask: (task: Task) => void;
   onDeleteTask: (id: number) => void;
 }
@@ -52,7 +55,7 @@ const PRIORITY_COLORS: Record<string, string> = {
   alta: "var(--danger)",
 };
 
-const EMOJIS = ["📌", "📚", "✏️", "🧪", "💻", "📊", "🎓", "🔬", "📝", "🧠", "⚗️", "📐", "🖥️", "📖", "🗂️"];
+const EMOJIS = ["⚽", "🎵", "🎬", "🖥️", "📊", "📖", "🧮"];
 
 function parseTags(tags: string | null): string[] {
   if (!tags) return [];
@@ -61,8 +64,12 @@ function parseTags(tags: string | null): string[] {
 
 function TaskModal({
   date, tasks, taskTypes, subjects,
-  onClose, onAddTask, onCompleteTask, onDeleteTask,
+  onClose, onAddTask, onEditTask, onCompleteTask, onDeleteTask,
 }: TaskModalProps) {
+  const [showForm, setShowForm] = useState(tasks.length === 0);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
+
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("📌");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -71,13 +78,41 @@ function TaskModal({
   const [taskTypeId, setTaskTypeId] = useState<number>(taskTypes[0]?.id ?? 0);
   const [subjectId, setSubjectId] = useState<number | "">("");
   const [priority, setPriority] = useState("media");
-  const [showAddForm, setShowAddForm] = useState(tasks.length === 0);
-  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
+
+  function resetForm() {
+    setTitle("");
+    setEmoji("📌");
+    setDescription("");
+    setTagsInput("");
+    setTaskTypeId(taskTypes[0]?.id ?? 0);
+    setSubjectId("");
+    setPriority("media");
+    setEditingTaskId(null);
+  }
+
+  function openNewForm() {
+    resetForm();
+    setShowForm(true);
+  }
+
+  function openEditForm(task: Task) {
+    setTitle(task.title);
+    setEmoji(task.emoji);
+    setDescription(task.description ?? "");
+    setTagsInput(task.tags ?? "");
+    setTaskTypeId(task.task_type_id);
+    setSubjectId(task.subject_id ?? "");
+    setPriority(task.priority);
+    setEditingTaskId(task.id);
+    setShowForm(true);
+    setExpandedTaskId(null);
+  }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!title.trim()) return;
-    onAddTask({
+
+    const data: TaskFormData = {
       title: title.trim(),
       emoji,
       description: description.trim(),
@@ -85,12 +120,16 @@ function TaskModal({
       taskTypeId,
       subjectId: subjectId === "" ? null : subjectId,
       priority,
-    });
-    setTitle("");
-    setDescription("");
-    setTagsInput("");
-    setEmoji("📌");
-    setShowAddForm(false);
+    };
+
+    if (editingTaskId !== null) {
+      onEditTask(editingTaskId, data);
+    } else {
+      onAddTask(data);
+    }
+
+    resetForm();
+    setShowForm(false);
   }
 
   function typeName(id: number) {
@@ -133,7 +172,7 @@ function TaskModal({
                   <li
                     key={task.id}
                     style={{
-                      background: "var(--bg-page)",
+                      background: "var(--bg-sunken)",
                       border: "1px solid var(--border)",
                       borderRadius: 10,
                       padding: "12px 14px",
@@ -167,6 +206,21 @@ function TaskModal({
                           {subj && ` · ${subj.name}`}
                           {task.status === "done" && ` · ${task.grade}% · +${task.points_earned} pts`}
                         </div>
+                        {tagList.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+                            {tagList.map((tag) => (
+                              <span
+                                key={tag}
+                                style={{
+                                  fontSize: 10, background: "var(--bg-surface-alt)", border: "1px solid var(--border)",
+                                  borderRadius: 10, padding: "2px 8px", opacity: 0.85,
+                                }}
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -175,25 +229,11 @@ function TaskModal({
                         {task.description && (
                           <p style={{ fontSize: 13, opacity: 0.8, margin: "0 0 10px" }}>{task.description}</p>
                         )}
-                        {tagList.length > 0 && (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                            {tagList.map((tag) => (
-                              <span
-                                key={tag}
-                                style={{
-                                  fontSize: 11, background: "var(--bg-surface-alt)", border: "1px solid var(--border)",
-                                  borderRadius: 12, padding: "3px 10px",
-                                }}
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                         <div style={{ display: "flex", gap: 8 }}>
                           {task.status === "pending" && (
                             <button onClick={() => onCompleteTask(task)} style={{ flex: 1 }}>Completar</button>
                           )}
+                          <button onClick={() => openEditForm(task)}>Editar</button>
                           <button onClick={() => onDeleteTask(task.id)}>Eliminar</button>
                         </div>
                       </div>
@@ -204,7 +244,7 @@ function TaskModal({
             </ul>
           )}
 
-          {showAddForm ? (
+          {showForm ? (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ position: "relative" }}>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -228,7 +268,7 @@ function TaskModal({
                   <div
                     style={{
                       position: "absolute", top: "100%", left: 0, marginTop: 4, zIndex: 10,
-                      background: "var(--bg-page)", border: "1px solid var(--border)", borderRadius: 8,
+                      background: "var(--bg-sunken)", border: "1px solid var(--border)", borderRadius: 8,
                       padding: 8, display: "flex", flexWrap: "wrap", gap: 4, width: 220,
                     }}
                   >
@@ -287,19 +327,26 @@ function TaskModal({
               </select>
 
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                {tasks.length > 0 && (
-                  <button type="button" onClick={() => setShowAddForm(false)}>Cancelar</button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetForm();
+                    setShowForm(tasks.length === 0 ? true : false);
+                    if (tasks.length === 0) setShowForm(false);
+                  }}
+                >
+                  Cancelar
+                </button>
                 <button
                   type="submit"
                   style={{ background: "var(--accent)", border: "none", color: "white", fontWeight: 600, borderRadius: 8, padding: "8px 16px" }}
                 >
-                  Guardar
+                  {editingTaskId !== null ? "Guardar cambios" : "Guardar"}
                 </button>
               </div>
             </form>
           ) : (
-            <button onClick={() => setShowAddForm(true)} style={{ width: "100%", padding: 12 }}>
+            <button onClick={openNewForm} style={{ width: "100%", padding: 12 }}>
               + Agregar tarea
             </button>
           )}

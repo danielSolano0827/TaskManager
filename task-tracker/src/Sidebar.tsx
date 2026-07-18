@@ -9,12 +9,28 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: "♠️" },
-  { id: "schedule", label: "Horario", icon: "♦️" },
-  { id: "grades", label: "Calificaciones", icon: "♣️" },
-  { id: "books", label: "Biblioteca", icon: "♥️" },
-  { id: "settings", label: "Configuración", icon: "♟️" },
+const NAV_GROUPS = [
+  {
+    label: "Tareas",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: "♠️" },
+      { id: "all-tasks", label: "Historial", icon: "♥️" },
+      { id: "schedule", label: "Horario", icon: "♣️" },
+      { id: "grades", label: "Calificaciones", icon: "♦️" },
+    ],
+  },
+  {
+    label: "Libros",
+    items: [
+      { id: "books", label: "Biblioteca", icon: "♟️" },
+    ],
+  },
+  {
+    label: "General",
+    items: [
+      { id: "settings", label: "Configuración", icon: "♥️" },
+    ],
+  },
 ];
 
 function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) {
@@ -47,28 +63,47 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
           textAlign: "center" }}>{username}</div>
       </div>
 
-      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              border: "none",
-              borderRadius: 8,
-              cursor: "pointer",
-              textAlign: "left",
-              background: currentPage === item.id ? "var(--bg-surface-alt)" : "transparent",
-              color: "var(--text)",
-              fontWeight: currentPage === item.id ? 600 : 400,
-            }}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
+      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, overflowY: "auto" }}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: 0.8,
+                opacity: 0.45,
+                padding: "0 12px 6px",
+              }}
+            >
+              {group.label}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {group.items.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 12px",
+                    border: "none",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    background: currentPage === item.id ? "var(--bg-surface-alt)" : "transparent",
+                    color: "var(--text)",
+                    fontWeight: currentPage === item.id ? 600 : 400,
+                    borderLeft: currentPage === item.id ? "3px solid var(--accent)" : "3px solid transparent",
+                  }}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

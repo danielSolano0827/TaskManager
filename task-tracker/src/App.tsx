@@ -14,6 +14,7 @@ import GradesView from "./GradesView";
 import SettingsView from "./SettingsView";
 import SemesterSelector from "./SemesterSelector";
 import BooksView from "./BooksView";
+import AllTasksView from "./AllTasksView";
 import { User } from "./auth";
 import "./App.css";
 
@@ -189,7 +190,7 @@ function App() {
   async function refreshUser(userId: number) {
     const db = await getDb();
     const [updated] = await db.select<User[]>(
-      "SELECT id, username, points, level, rank FROM users WHERE id = $1",
+      "SELECT id, username, points, level, rank, theme FROM users WHERE id = $1",
       [userId]
     );
     setUser(updated);
@@ -282,6 +283,19 @@ function App() {
     if (!user) return;
     const db = await getDb();
     await db.execute("DELETE FROM tasks WHERE id = $1", [id]);
+    await loadTasks(user.id);
+  }
+
+  async function handleEditTask(taskId: number, data: {
+    title: string; emoji: string; description: string; tags: string;
+    taskTypeId: number; subjectId: number | null; priority: string;
+  }) {
+    if (!user) return;
+    const db = await getDb();
+    await db.execute(
+      `UPDATE tasks SET title=$1, emoji=$2, description=$3, tags=$4, task_type_id=$5, subject_id=$6, priority=$7 WHERE id=$8`,
+      [data.title, data.emoji, data.description || null, data.tags || null, data.taskTypeId, data.subjectId, data.priority, taskId]
+    );
     await loadTasks(user.id);
   }
 
@@ -625,6 +639,16 @@ function App() {
           </div>
         )}
 
+        {currentPage === "all-tasks" && (
+          <AllTasksView
+            tasks={tasks}
+            taskTypes={taskTypes}
+            subjects={subjects}
+            semesters={semesters}
+            onSelectTask={(task) => setSelectedDate(task.due_date)}
+          />
+        )}
+
         {currentPage === "schedule" && (
           <div style={{ maxWidth: 1500, margin: "0 auto" }}>
             <SemesterSelector
@@ -706,6 +730,7 @@ function App() {
             subjects={subjects.filter((s) => s.enabled === 1)}
             onClose={() => setSelectedDate(null)}
             onAddTask={handleAddTask}
+            onEditTask={handleEditTask}
             onCompleteTask={setTaskToComplete}
             onDeleteTask={handleDeleteTask}
           />
