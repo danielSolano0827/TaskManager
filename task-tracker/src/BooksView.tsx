@@ -90,7 +90,7 @@ function BooksView({ books, onAdd, onUpdate, onDelete }: BooksViewProps) {
         </p>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 20 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
         {filtered.map((book) => {
           const progress = book.total_pages ? Math.min(100, (book.pages_read / book.total_pages) * 100) : 0;
           return (
@@ -98,6 +98,7 @@ function BooksView({ books, onAdd, onUpdate, onDelete }: BooksViewProps) {
               key={book.id}
               onClick={() => openEdit(book)}
               style={{
+                width: 250,
                 cursor: "pointer",
                 background: "var(--bg-surface)",
                 border: "1px solid var(--border)",
@@ -134,7 +135,7 @@ function BooksView({ books, onAdd, onUpdate, onDelete }: BooksViewProps) {
 
               <div
                 style={{
-                  height: 200,
+                  height: 370,
                   background: book.cover_image
                     ? `url(${book.cover_image}) center/cover`
                     : "var(--bg-sunken)",

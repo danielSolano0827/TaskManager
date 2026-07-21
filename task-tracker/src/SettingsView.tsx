@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import ThemeSelector from "./ThemeOption";
 import { setFullscreen, setMaximized, isFullscreen, isMaximized } from "./windowControls";
+import { enableAutostart, disableAutostart, isAutostartEnabled } from "./autostart";
 
 interface ToggleRowProps {
   label: string;
@@ -89,13 +90,24 @@ interface SettingsViewProps {
 function SettingsView({ currentTheme, onThemeChange }: SettingsViewProps) {
   const [fullscreen, setFullscreenState] = useState(false);
   const [maximized, setMaximizedState] = useState(false);
+  const [autostart, setAutostartState] = useState(false);
 
   useEffect(() => {
     (async () => {
       setFullscreenState(await isFullscreen());
       setMaximizedState(await isMaximized());
+      setAutostartState(await isAutostartEnabled());
     })();
   }, []);
+
+  async function handleAutostartToggle(checked: boolean) {
+    if (checked) {
+      await enableAutostart();
+    } else {
+      await disableAutostart();
+    }
+    setAutostartState(checked);
+  }
 
   async function handleFullscreenToggle(checked: boolean) {
     await setFullscreen(checked);
@@ -134,6 +146,13 @@ function SettingsView({ currentTheme, onThemeChange }: SettingsViewProps) {
           description="Ocupa toda la pantalla con bordes normales"
           checked={maximized}
           onChange={handleMaximizedToggle}
+        />
+        <Divider />
+        <ToggleRow
+          label="Iniciar con Windows"
+          description="Abre la app automáticamente al encender la PC"
+          checked={autostart}
+          onChange={handleAutostartToggle}
         />
       </SettingsSection>
     </div>

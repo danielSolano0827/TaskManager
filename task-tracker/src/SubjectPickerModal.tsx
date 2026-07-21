@@ -22,7 +22,7 @@ interface SubjectPickerModalProps {
 const COLORS = ["#4f9eff", "#ff6b6b", "#51cf66", "#ffa94d", "#cc5de8", "#22b8cf", "#f06595"];
 
 function SubjectPickerModal({
-  day, hour, dayLabel, currentSubjectId, subjects,
+  hour, dayLabel, currentSubjectId, subjects,
   onClose, onAssign, onCreateAndAssign, onRemove,
 }: SubjectPickerModalProps) {
   const [newName, setNewName] = useState("");

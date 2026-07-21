@@ -144,6 +144,7 @@ export async function getDb() {
         grade REAL,
         points_earned INTEGER DEFAULT 0,
         due_date DATETIME,
+        last_notified_date VARCHAR(10),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id),

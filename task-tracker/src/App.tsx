@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { getDb } from "./db";
 import { isOverdue } from "./dateUtils";
+import { checkAndNotifyPendingTasks } from "./taskReminders";
+import { setMaximized } from "./windowControls";
 import AuthForm from "./AuthForm";
 import Sidebar from "./Sidebar";
 import CalendarView from "./CalendarView";
@@ -16,6 +18,7 @@ import SemesterSelector from "./SemesterSelector";
 import BooksView from "./BooksView";
 import AllTasksView from "./AllTasksView";
 import HabitsView from "./HabitsView";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { User } from "./auth";
 import "./App.css";
 
@@ -245,6 +248,7 @@ function App() {
 
   useEffect(() => {
     if (user) {
+      setMaximized(true);
       loadTaskTypes();
       loadTasks(user.id);
       loadSubjects(user.id);
@@ -254,12 +258,24 @@ function App() {
       loadBooks(user.id);
       loadHabits(user.id);
       loadHabitLogs(user.id);
+      checkAndNotifyPendingTasks(user.id);
     }
   }, [user?.id]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", user?.theme ?? "ocean");
   }, [user?.theme]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Revisa cada 30 minutos (ajusta el intervalo a tu gusto)
+    const interval = setInterval(() => {
+      checkAndNotifyPendingTasks(user.id);
+    }, 30 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   function handleLogout() {
     setUser(null);
@@ -270,6 +286,12 @@ function App() {
     setTaskToComplete(null);
     setPickerCell(null);
     setCurrentPage("dashboard");
+  }
+
+  async function handleLoginSuccess(user: User) {
+    setUser(user);
+    const win = getCurrentWindow();
+    await win.hide();
   }
 
   // ---- Tareas ----
@@ -447,7 +469,7 @@ function App() {
   }
 
   if (!user) {
-    return <AuthForm onAuthenticated={setUser} />;
+    return <AuthForm onAuthenticated={handleLoginSuccess} />;
   }
 
   // ----------------- Semestres -----------------
