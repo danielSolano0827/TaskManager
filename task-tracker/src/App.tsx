@@ -15,6 +15,7 @@ import SettingsView from "./SettingsView";
 import SemesterSelector from "./SemesterSelector";
 import BooksView from "./BooksView";
 import AllTasksView from "./AllTasksView";
+import HabitsView from "./HabitsView";
 import { User } from "./auth";
 import "./App.css";
 
@@ -83,6 +84,21 @@ interface Book {
   cover_image: string | null;
 }
 
+interface Habit {
+  id: number;
+  name: string;
+  emoji: string;
+  category: string | null;
+  points_value: number;
+  color: string;
+  enabled: number;
+}
+interface HabitLog {
+  id: number;
+  habit_id: number;
+  log_date: string;
+}
+
 const RANK_THRESHOLDS = [
   { rank: "Vagazo", minLevel: 1 },
   { rank: "Vago", minLevel: 3 },
@@ -90,6 +106,22 @@ const RANK_THRESHOLDS = [
   { rank: "Volado", minLevel: 11 },
   { rank: "Saico", minLevel: 21 },
 ];
+
+const HABIT_RANK_THRESHOLDS = [
+  { rank: "Insalubre", minLevel: 1 },
+  { rank: "Algo es Algo", minLevel: 3 },
+  { rank: "Normal", minLevel: 6 },
+  { rank: "Rico", minLevel: 11 },
+  { rank: "Rico Papi", minLevel: 21 },
+];
+
+function computeHabitRank(level: number): string {
+  let current = HABIT_RANK_THRESHOLDS[0].rank;
+  for (const r of HABIT_RANK_THRESHOLDS) {
+    if (level >= r.minLevel) current = r.rank;
+  }
+  return current;
+}
 
 function computeRank(level: number): string {
   let current = RANK_THRESHOLDS[0].rank;
@@ -120,7 +152,22 @@ function App() {
 
   const [books, setBooks] = useState<Book[]>([]);
 
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [habitLogs, setHabitLogs] = useState<HabitLog[]>([]);
+
   //Funciones de carga de datos desde la base de datos
+  async function loadHabits(userId: number) {
+    const db = await getDb();
+    const result = await db.select<Habit[]>("SELECT * FROM habits WHERE user_id = $1", [userId]);
+    setHabits(result);
+  }
+
+  async function loadHabitLogs(userId: number) {
+    const db = await getDb();
+    const result = await db.select<HabitLog[]>("SELECT * FROM habit_logs WHERE user_id = $1", [userId]);
+    setHabitLogs(result);
+  }
+
   async function loadTaskTypes() {
     const db = await getDb();
     const result = await db.select<TaskType[]>("SELECT * FROM task_types");
@@ -190,7 +237,7 @@ function App() {
   async function refreshUser(userId: number) {
     const db = await getDb();
     const [updated] = await db.select<User[]>(
-      "SELECT id, username, points, level, rank, theme FROM users WHERE id = $1",
+      "SELECT id, username, points, level, rank, theme, habit_points, habit_level, habit_rank FROM users WHERE id = $1",
       [userId]
     );
     setUser(updated);
@@ -205,6 +252,8 @@ function App() {
       loadRubrics(user.id);
       loadSemesters(user.id);
       loadBooks(user.id);
+      loadHabits(user.id);
+      loadHabitLogs(user.id);
     }
   }, [user?.id]);
 
@@ -457,6 +506,57 @@ function App() {
     await db.execute("DELETE FROM books WHERE id = $1", [id]);
     await loadBooks(user.id);
   }
+  // ------------- Habitos -------------
+  async function handleAddHabit(data: { name: string; emoji: string; category: string; points: number; color: string }) {
+  if (!user) return;
+  const db = await getDb();
+  await db.execute(
+    "INSERT INTO habits (user_id, name, emoji, category, points_value, color) VALUES ($1, $2, $3, $4, $5, $6)",
+    [user.id, data.name, data.emoji, data.category || null, data.points, data.color]
+  );
+  await loadHabits(user.id);
+}
+
+async function handleDeleteHabit(id: number) {
+  if (!user) return;
+  const db = await getDb();
+  await db.execute("DELETE FROM habit_logs WHERE habit_id = $1", [id]);
+  await db.execute("DELETE FROM habits WHERE id = $1", [id]);
+  await loadHabits(user.id);
+  await loadHabitLogs(user.id);
+}
+
+async function handleToggleHabitToday(habit: Habit, date: string) {
+  if (!user) return;
+  const db = await getDb();
+
+  const existing = habitLogs.find((l) => l.habit_id === habit.id && l.log_date === date);
+  let pointsDelta = 0;
+
+  if (existing) {
+    await db.execute("DELETE FROM habit_logs WHERE id = $1", [existing.id]);
+    pointsDelta = -habit.points_value;
+  } else {
+    await db.execute(
+      "INSERT INTO habit_logs (habit_id, user_id, log_date) VALUES ($1, $2, $3)",
+      [habit.id, user.id, date]
+    );
+    pointsDelta = habit.points_value;
+  }
+
+  const newPoints = Math.max(0, user.habit_points + pointsDelta);
+  const newLevel = Math.floor(newPoints / 100) + 1;
+  const newRank = computeHabitRank(newLevel);
+
+  await db.execute(
+    "UPDATE users SET habit_points = $1, habit_level = $2, habit_rank = $3 WHERE id = $4",
+    [newPoints, newLevel, newRank, user.id]
+  );
+
+  await refreshUser(user.id);
+  await loadHabitLogs(user.id);
+}
+
   // ---- Datos derivados ----
 
   const tasksByDate: Record<string, { pending: number; done: number; overdue: number }> = {};
@@ -707,6 +807,19 @@ function App() {
               onDeleteRubric={handleDeleteRubric}
             />
           </div>
+        )}
+
+        {currentPage === "habits" && (
+          <HabitsView
+            habits={habits}
+            logs={habitLogs}
+            habitPoints={user.habit_points}
+            habitLevel={user.habit_level}
+            habitRank={user.habit_rank}
+            onToggleToday={handleToggleHabitToday}
+            onAddHabit={handleAddHabit}
+            onDeleteHabit={handleDeleteHabit}
+          />
         )}
         
         {currentPage === "settings" && (

@@ -20,15 +20,19 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: "Hábitos",
+    items: [{ id: "habits", label: "Hábitos", icon: "♟️" }],
+  },
+  {
     label: "Libros",
     items: [
-      { id: "books", label: "Biblioteca", icon: "♟️" },
+      { id: "books", label: "Biblioteca", icon: "♥️" },
     ],
   },
   {
     label: "General",
     items: [
-      { id: "settings", label: "Configuración", icon: "♥️" },
+      { id: "settings", label: "Configuración", icon: "♠️" },
     ],
   },
 ];

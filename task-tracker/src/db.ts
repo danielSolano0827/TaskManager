@@ -34,8 +34,38 @@ export async function getDb() {
         level INTEGER DEFAULT 1,
         rank VARCHAR(30) DEFAULT 'Vagazo',
         theme VARCHAR(20) DEFAULT 'ocean',
+        habit_points INTEGER DEFAULT 0,
+        habit_level INTEGER DEFAULT 1,
+        habit_rank VARCHAR(30) DEFAULT 'Insalubre',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS habits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        emoji VARCHAR(10) DEFAULT '✅',
+        category VARCHAR(50),
+        points_value INTEGER NOT NULL DEFAULT 10,
+        color VARCHAR(20) DEFAULT '#4f9eff',
+        enabled INTEGER NOT NULL DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS habit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        habit_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        log_date VARCHAR(10) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (habit_id) REFERENCES habits(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
 
