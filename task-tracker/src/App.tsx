@@ -621,7 +621,7 @@ async function handleToggleHabitToday(habit: Habit, date: string) {
         onLogout={handleLogout}
       />
 
-      <div style={{ flex: 1, padding: 20 }}>
+      <div style={{ flex: 1, padding: 20, paddingLeft: 220, boxSizing: "border-box" }}>
         {currentPage === "dashboard" && (
           <div style={{ maxWidth: 1500, margin: "0 auto" }}>
             <div

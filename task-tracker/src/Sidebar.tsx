@@ -48,7 +48,8 @@ function Sidebar({ username, currentPage, onNavigate, onLogout }: SidebarProps) 
     <div
       style={{
         width: 200,
-        minHeight: "100vh",
+        height: "100vh",
+        position: "fixed",
         background: "var(--bg-sunken)",
         borderRight: "1px solid var(--border)",
         display: "flex",
